@@ -1,0 +1,7 @@
+for LastGames : 3 : 29.8333333333%
+for LastGames : 4 : 28.8888888889%
+for LastGames : 5 : 28.6111111111%
+for LastGames : 6 : 27.7222222222%
+for LastGames : 7 : 26.2222222222%
+for LastGames : 8 : 25.6111111111%
+for LastGames : 9 : 25.0555555556%
