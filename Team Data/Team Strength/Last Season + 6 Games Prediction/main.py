@@ -39,17 +39,20 @@ if __name__ == '__main__':
 			XMAX=XMIN
 			scorePercentage=0
 			successPercentage=0
-			if (season[count]!=1415):
+
+			if (season[count]!=1415): #Decomment to get the results of every single year prediction
+				
 				while (XMAX != 38): # 37 MatchDay so we can predict the last one of the season ---- GAMETOANALYZE different results
-					#myLambda=Lambda(season[count+1],database,XMIN,XMAX,0) # Predict Game XMAX+1 -> Next Game
-					#result=myLambda.calculateLambda() # 0 = we dont want a print
-					#scorePercentage+=result[0]
-					#successPercentage+=result[1]
+					myLambda=Lambda(season[count+1],database,XMIN,XMAX,0) # Predict Game XMAX+1 -> Next Game
+					result=myLambda.calculateLambda() # 0 = we dont want a print
+					scorePercentage+=result[0]
+					successPercentage+=result[1]
 					XMIN+=1
 					XMAX+=1 # Predict the Next Game
 				#print("Final Correctness Prediction for season : "+str(season[count+1]))
 				#print("Score Success : "    +str((scorePercentage*1.0) /(38-GAMESTOADAPT))+"%")
 				#print("Prediction Result : "+str((successPercentage*1.0) /(38-GAMESTOADAPT))+"%")
+				
 			else:
 				while (XMAX != CURRENTMATCHDAY+1): # Current Match Day +1
 					myLambda=Lambda(season[count+1],database,XMIN,XMAX,CURRENTMATCHDAY) # Predict Game XMAX+1 -> Next Gamehost

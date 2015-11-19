@@ -47,12 +47,12 @@ if __name__ == '__main__':
 					AY		 			int 			NOT NULL , \
 					HR		 			int 			NOT NULL , \
 					AR		 			int 			NOT NULL , \
-					B365H 				int 			NOT NULL , \
-					B365D 				int 			NOT NULL , \
-					B365A 				int 			NOT NULL , \
-					BWH 				int 			NOT NULL , \
-					BWD 				int 			NOT NULL , \
-					BWA 				int 			NOT NULL , \
+					B365H 				DECIMAL(3,2) 			NOT NULL , \
+					B365D 				DECIMAL(3,2) 			NOT NULL , \
+					B365A 				DECIMAL(3,2) 			NOT NULL , \
+					BWH 				DECIMAL(3,2) 			NOT NULL , \
+					BWD 				DECIMAL(3,2) 			NOT NULL , \
+					BWA 				DECIMAL(3,2) 			NOT NULL , \
 					MatchDay 			int 			NOT NULL , \
 					PRIMARY KEY (id), \
 					FOREIGN KEY (HomeTeam) REFERENCES ranking"+str(year)+"(Team) \
