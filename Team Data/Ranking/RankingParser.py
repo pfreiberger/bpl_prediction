@@ -43,9 +43,9 @@ class Parser(object):
 		return elem
 
 	def setName(self,name): # Team names don't have the same format, we will change it here
-		if (name=="Manchester United"):
+		if ("Manchester United" in name):
 			name="Man United"
-		elif (name=="Manchester City"):
+		elif ("Manchester City" in name):
 			name="Man City"
 		elif ("Tottenham" in name):
 			name="Tottenham"
@@ -79,7 +79,12 @@ class Parser(object):
 			name="Hull"
 		elif("Leicester" in name):
 			name="Leicester"
-		
+		elif ("AFCBournemouth" in name):
+			name="Bournemouth"
+		elif ("SunderlandAFC" in name):
+			name="Sunderland"
+		elif ("Watford" in name):
+			name="Watford"
 		return name
 
 
