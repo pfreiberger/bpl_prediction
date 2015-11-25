@@ -24,6 +24,9 @@ db = client.TwitterPred
 # Choose the collection
 collection = db.Twitter
 
+db2 = client.cleansed
+col2 = db2.pure
+
 
 count = 0
 
@@ -52,7 +55,8 @@ with open("myfile.txt", "w") as f:
 						hash_two = in_array(tweet['text'].lower() , tmp_team_hashtags)
 
 					if hash_two == False:
-						print(tweet['text'].encode('utf-8'), file=f)
+						#print(tweet['text'].encode('utf-8'), file=f)
+                        col2.insert(tweet)
 
 						count+=1
 

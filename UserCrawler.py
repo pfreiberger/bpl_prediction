@@ -10,16 +10,12 @@ db2 = server2['TwitterPred']
 col = db1['Twitter']
 usertweets = db2['UserTweets']
 
-
-# Go to http://apps.twitter.com and create an app.
-# The consumer key and secret will be generated for you after
-ckey="u21PLDSa5ZASKl9227hdPHyTe"
-csecret="mAcyWJ3gAw9tw0E5drh8tQpUyKsWEm4NXlQRgD605qCqtOa5Zo"
-
-# After the step above, you will be redirected to your app's page.
-# Create an access token under the the "Your access token" section
-atoken="2916112097-YLaonPDx7SElq7ISivpfThCmBb6eirflHGUG2MY"
-asecret="pQGcax0xDhjZhuZ2ru0Rgnv4u8aYPZ3SSixpV11SlUoO4"
+with open(fname) as f:
+    content = f.readlines()
+    ckey = content[0]
+    csecret = content[1]
+    atoken = content[2]
+    asecret = content[3]
 
 
 OAUTH_KEYS = dict(consumer_key=ckey, consumer_secret=csecret, access_token_key=atoken, access_token_secret=asecret)
