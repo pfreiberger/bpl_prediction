@@ -24,7 +24,8 @@ class Lambda(object):
 		self.xmin=xmin
 		self.xmax=xmax
 		self.printOrNot=printOrNot
-
+		#self.getGames1415()
+		
 	def getGames(self):
 		self.cursor.execute( 
 			"SELECT id, HomeTeam, AwayTeam, FTHG, FTAG, MatchDay \
@@ -40,6 +41,33 @@ class Lambda(object):
 			tmp.append(str(attrib[4]))
 			tmp.append(str(attrib[5]))
 			self.seasonGame.append(tmp)
+	"""
+	def getGames1415(self):
+		# '2014-08-16 00:00:00' ISO Time
+		if (self.season==1415):
+			self.cursor.execute( 
+				"SELECT GameDate, HomeTeam, AwayTeam, FTHG, FTAG \
+			 	FROM championship1415"
+			 	)
+			attributes=self.cursor.fetchall()
+			vec=[]
+			for attrib in attributes:
+				tmp=[]
+				date=str(attrib[0])
+				date=date[:10]+"T"+date[10:]+"Z"
+				date=date.split(" ")
+				date=date[0]+date[1]
+				tmp.append(str(date))
+				tmp.append(str(attrib[1]))
+				tmp.append(str(attrib[2]))
+				tmp.append(str(attrib[3]))
+				tmp.append(str(attrib[4]))
+				vec.append(tmp)
+			afile=open("games.txt","w")
+			afile.write(str(vec))
+			afile.close()
+	"""
+
 
 	def getTeamAttr(self,homeTeam,awayTeam):
 		homeTeamAttr=[]
@@ -153,6 +181,14 @@ class Lambda(object):
 				else:
 					awayWin+=(home*away)
 		return (homeWin*100,awayWin*100,draw*100,homeScore,awayScore)
+
+	"""
+	home = pymc.Normal('home', 0, .0001, value=0)
+	mu_att = pymc.Normal('mu_att', 0, .0001, value=0)
+	mu_def = pymc.Normal('mu_def', 0, .0001, value=0)
+
+	
+	"""
 
 	"""
 	def probabilitiesImproved(self):
