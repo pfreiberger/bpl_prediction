@@ -25,7 +25,7 @@ db = client.TwitterPred
 collection = db.Twitter
 
 db2 = client.cleansed
-col2 = db2.pure
+col2 = db2.pure_2
 
 
 count = 0
