@@ -10,10 +10,10 @@ match_days = [['2014-08-16 00:00:00', 'Arsenal', 'Crystal Palace', '2', '1'], ['
 client = MongoClient()
 
 # Connection to the database
-db = client.Twitter
+db = client['cleansed']
 
 # Choose the collection
-collection = db.Formated_tweets
+collection = db['pure']
 
 #define timedelta
 five_days = timedelta(days=5)
@@ -31,20 +31,20 @@ for tweet in collection.find():
 		if tweet_date > datetime.strptime(match[0], '%Y-%m-%d %H:%M:%S')-five_days: #and tweet_date < datetime.strptime(match[0], '%Y-%m-%d %H:%M:%S')+two_days:
 			if tweet_team == match[1].lower():
 				if int(match[3]) > int(match[4]):
-					#insert in win
+					db[tweet_team+'_win'].insert(tweet)
 
 				elif int(match[3]) == int(match[4]):
-					#insert in draw
+					db[tweet_team+'_draw'].insert(tweet)
 
-				else: #insert in lose
+				else: db[tweet_team+'_lose'].insert(tweet)
 
 			if tweet_team == match[2].lower():
 				if int(match[4]) > int(match[3]):
-					#insert in win
+					db[tweet_team+'_win'].insert(tweet)
 
 				elif int(match[4]) == int(match[3]):
-					#insert in draw
+					db[tweet_team+'_draw'].insert(tweet)
 
-				else: #insert in lose
+				else: db[tweet_team+'_lose'].insert(tweet)
 
 
