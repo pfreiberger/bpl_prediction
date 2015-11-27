@@ -27,7 +27,7 @@ db = client.TwitterPred
 collection = db.screen_scraper
 
 db2 = client.cleansed
-col2 = db2.pure
+col2 = db2.pure_2
 
 
 count = 0

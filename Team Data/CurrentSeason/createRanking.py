@@ -1,13 +1,19 @@
+import _mysql
+import MySQLdb
+import sys
+
 class Ranking(object):
 	"""docstring for Ranking"""
-	def __init__(self, aFile):
+	def __init__(self, aFile,database):
 		super(Ranking, self).__init__()
+		self.database = database
 		self.file = open(aFile,"r")
 		self.ranking=open("Processedepl-15-16.json","w")
 		self.allTeams=[]
 		self.aTeam=[0,"",0,0,0,0,0,0,0,0] #Rank , Team Name , Played, Wins , Draw, Lost ,GoalsFor, GoalsAgainst, GoalsDiff, Points
 		self.allLines=self.file.readlines()
 		self.generalRanking=[]
+		self.cursor = self.database.cursor()
 
 	def calculateRanking(self):
 		self.getTeams()
@@ -52,6 +58,7 @@ class Ranking(object):
 				i+=1
 		self.sortTeamByRanking()
 		self.generateRankingFile()
+		self.DBUpdate()
 
 	def sortTeamByRanking(self):
 		newlst=[]
@@ -75,8 +82,14 @@ class Ranking(object):
 		self.ranking.close()
 		self.file.close()
 
-
-
+	def DBUpdate(self):
+		for team in self.generalRanking:
+			self.cursor.execute ("""
+						   UPDATE ranking1516
+						   SET Rank=%s, Team=%s, Played=%s , Wins=%s,Draws=%s,Losses=%s,GoalsFor=%s , GoalsAgainst=%s,GoalsDIFF=%s,Points=%s\
+						   WHERE Team=%s
+						""",(team[0],team[1],team[2],team[3],team[4],team[5],team[6],team[7],team[8],team[9],team[1])) 
+		self.database.commit()
 
 
 	def getTeams(self):
@@ -124,7 +137,15 @@ class Ranking(object):
 		self.aTeam[7]+=int(line[3]) # We add the goals they took
 
 
-
-myRank=Ranking("ProcessedStats1516.csv")
-myRank.calculateRanking()
+if __name__ == '__main__':	
+	try:
+		database = MySQLdb.connect('localhost', 'root', 'root', 'EPL'); #login, password, database
+		myRank=Ranking("ProcessedStats1516.csv",database)
+		myRank.calculateRanking()
+		database.close();
+		
+	except (_mysql.Error):
+		
+		print ("Mysql error ")
+		sys.exit(1)
 		
