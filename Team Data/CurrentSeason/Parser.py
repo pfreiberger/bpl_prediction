@@ -101,6 +101,8 @@ class Parser(object):
 			name="Tottenham"
 		elif ("West Brom" in name):
 			name="West Brom"
+		elif ("WestBrom" in name):
+			name="West Brom"
 		elif ("Newcastle" in name):
 			name="Newcastle"
 		elif ("Stoke" in name):
@@ -117,6 +119,8 @@ class Parser(object):
 			name="Birmingham"
 		elif("West Ham" in name):
 			name="West Ham"
+		elif("WestHam" in name):
+			name="West Ham"
 		elif("Queen" in name):
 			name="QPR"
 		elif("Swansea" in name):
@@ -127,6 +131,8 @@ class Parser(object):
 			name="Cardiff"
 		elif("Hull" in name):
 			name="Hull"
+		elif("CrystalPalace" in name):
+			name="Crystal Palace"
 		elif("Leicester" in name):
 			name="Leicester"
 		elif ("AFCBournemouth"==name):
@@ -135,6 +141,8 @@ class Parser(object):
 			name="Sunderland"
 		elif ("Watford" in name):
 			name="Watford"
+		elif ("AstonVilla" in name):
+			name="Aston Villa"
 		return name
 
 
