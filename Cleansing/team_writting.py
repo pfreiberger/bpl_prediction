@@ -10,9 +10,26 @@ client = MongoClient()
 # Connection to the database
 db = client['cleansed']
 
-# Choose the collection
-collection = db['pure']
+team_names = ['Man United', 'Man City''Arsenal','Chelsea','Liverpool','West Ham','Leicester','Everton','Swansea','Crystal Palace','Tottenham','Watford','Norwich City','West Brom','Bournemouth','Southampton','Aston Villa','Stoke','Newcastle','Sunderland',]
 
 
+for team in team_names:
+	collection_win = db[team.lower()+'_win']
+	collection_lose = db[team.lower()+'_lose']
+	collection_draw = db[team.lower()+'_draw']
 
+	with open(team.lower()+"_win.txt", "w") as f:
+		for tweet in collection_win.find():
+			for word in tweet['words']:
+				print(word+" ", file=f)
+
+	with open(team.lower()+"_lose.txt", "w") as f:
+		for tweet in collection_lose.find():
+			for word in tweet['words']:
+				print(word+" ", file=f)
+
+	with open(team.lower()+"_draw.txt", "w") as f:
+		for tweet in collection_draw.find():
+			for word in tweet['words']:
+				print(word+" ", file=f)
 
