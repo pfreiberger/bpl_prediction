@@ -13,7 +13,7 @@ client = MongoClient()
 db = client['cleansed']
 
 # Choose the collection
-collection = db['pure']
+collection = db['season14_15']
 
 #define timedelta
 five_days = timedelta(days=5)

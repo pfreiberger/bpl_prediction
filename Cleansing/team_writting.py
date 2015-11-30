@@ -17,7 +17,6 @@ def file_write(team_and_result, collec):
 		for tweet in collec.find():
 			for word in tweet['words']:
 				print(word+" ", file=f)
-	return
 
 for team in team_names:
 	collection_win = db[team.lower()+'_win']
