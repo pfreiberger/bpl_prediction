@@ -44,5 +44,3 @@ for tweet in collection.find():
 					db[tweet_team+'_draw'].insert(tweet)
 
 				else: db[tweet_team+'_lose'].insert(tweet)
-
-
