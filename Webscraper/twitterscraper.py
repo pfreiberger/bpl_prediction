@@ -31,10 +31,10 @@ import pymongo
 
 server = pymongo.MongoClient('localhost', 27017)
 db = server['TwitterPred']
-collection = db['screen_scraper']
+collection = db['screen_scraper_new']
 
-current_date = datetime.date(2014, 9, 29)
-end_date = datetime.date(2014, 8, 10)
+current_date = datetime.date(2015, 11, 22)
+end_date = datetime.date(2015, 8, 1)
 
 browser = webdriver.Firefox()
 
@@ -66,10 +66,10 @@ while current_date > end_date:
         url = root_url + hashtag + lang + since + since_date + until + until_date + end_string
         browser.get(url)
         i = 0
-        while i < 20:
+        while i < 15:
             browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             i += 1
-            time.sleep(1)
+            time.sleep(0.7)
         data = soup(browser.page_source)
 
         tweets = data.find_all("li", {"class": "js-stream-item stream-item stream-item expanding-stream-item "})

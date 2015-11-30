@@ -12,13 +12,9 @@ tags_to_keep = ["JJ", "JJR", "JJS", "NN", "NNS", "NNP", "NNPS", "VB", "VBD", "VB
 del_tags = ["http", "\@", "app"]
 
 server = pymongo.MongoClient('localhost', 27017)
-db = server['TwitterPred']
-screen_col = db['screen_scraper']
-user_col = db['UserTweets']
-twitter_col = db['Twitter']
+db = server['cleansed']
+pure_col = db['pure']
 
-db2 = server['intermediate']
-transformed = db2['transformed']
 
 
 def transform_screenscraper():
@@ -78,9 +74,7 @@ def transform_usertweets():
             
     if docs:
         transformed.insert(docs)
-    
-    
-    
+
 def transform(id, text, hashtags, d, ss):
     words = remove_words(text)
     stemmed_words = stem_words(words)
@@ -89,44 +83,33 @@ def transform(id, text, hashtags, d, ss):
     doc = {"_id": int(id), "words": stemmed_words, "date": dte, "hashtags": hashtags}
     return doc
  
-
-def add_home_away(teams, collection):
-    teams = load.file()
-    heading = ["date", "home", "away", "matchday"]
-    teams = pd.DataFrame(csv.open('file.csv'))
-    start = datetime.datetime(2014-8-10-0-0)
-    d = get_team_dict(file)
+def add_matchday(collection, filename, start):
+    headings = ["date", "home", "away", "matchday"]
+    matches = pd.read_csv(filename, header=headings)
     
-    for team in teams:
-        home = 1
-        away = 2 
-        hashtags = d[team]
-        #home = pd.DataFrame(df[df["home"] == team], 'h', df[6])
-        #away = pd.DataFrame(df[df["away"] == team], 'a', df[7])
-        
-        
-                
-        all = pd.concat([home, away])
-        
-        all = sort(all[0])
-        
-        for row in all:
-            end = row['date']
-            matchday = row["matchday"]
-            query = {"date": {"$gte": start}, "date": {"$lt": end}, "matchday": {"$exitsts": False}}
-            set_doc = {"set": {"home/away": row[5], "matchday": matchday, "season": "14/15", "win/lose": df[6]}}
-            #collection.update({"date": {"$gte": start}, "date" : {"$lt": end}, matchday :{"$exists": false}},
-            #    {set: {"home/away": row[5], "matchday": matchday, "season": "14/15", "win/lose": df[6]}})
-            collection.update(query, set_doc)
-            start = end;
-        
+    for match in matches:
+        matchday = row['date']
+        home_team = row['home']
+        away_team = row['away']
+        matchday = row['matchday']
+        home_query = {"team": home_team.lower(), "date": {"$gte": start}, "date": {"$lt": end}, "matchday": {"$exitsts": False}}
+        away_query = {"team": away_team.lower(), "date": {"$gte": start}, "date": {"$lt": end}, "matchday": {"$exitsts": False}}
+        home_set_doc = {"set": {"home/away": 'h', "matchday": matchday}}
+        away_set_doc = {"set": {"home/away": 'a', "matchday": matchday}}
+        collection.update(home_query, home_set_doc)
+        collection.update(away_query, away_set_doc)
+        start = end;
+            
+def add_season(collection):
+    collection.update({"date": {"$lte": datetime(2015-6-1-0-0)}}, {"$set": "season": "14_15"})
+    collection.update({"date": {"$gt": datetime(2015-6-1-0-0)}}, {"$set": "season": "15_16"})
 
 def add_team(collection, dict):
     for key, value in dict.items():
         print(key)
         print(value)
         collection.update_many({"hashtags": {"$in": value}}, {"$set": {"team": key}})
-        
+
 def separate_teams(col, dict):
     for element in dict:
         team = element.key
@@ -134,10 +117,10 @@ def separate_teams(col, dict):
         collection = db[team]
         elements = col.find({"hashtag": {"$in": hahstags}}, {'text': 1, 'hashtags': 1, 'date': 1})
         collection.intsert(elements)
-        
+
 def delete(collection, hastags):
     collection.delete({"hashtag" : {'$nin': hashtags}})
-         
+
 def remove_words(text):
     tokens = nltk.word_tokenize(text)
     tagged_words = nltk.pos_tag(tokens)
@@ -157,7 +140,6 @@ def stem_words(words):
         res.append(stem)
     return res
 
-
 def create_team_dict(filename):
     d = dict()
     with open(filename, newline='') as csvfile:
@@ -169,18 +151,7 @@ def create_team_dict(filename):
             d[key] = values
     return d
     
-    
-#def process_tweets(collection, query):
-#    for tweet in collection.find(query):
-#        words = remove_words(tweet["text"])
-#        words = stem_words(words)
-#        
-#        col.insert({"_id": tweet["_id"], "words": words, "matchday": tweet["matchday"], "date_of_tweet": tweet["date"], "date_of_match": tweet["matchday"], "result": tweet['result']})
-  
-  
-print('hallo')
-transform_twitter()
-dict = create_team_dict('./team_hashtag.csv')
-add_team(transformed, dict)
-print(dict)
-print('ciao')
+dic = create_team_dict('./team_hashtag.csv')
+add_team(pure, dic)
+add_matchday(pure, './championship1415.csv', datetime(2014-8-10-0-0))
+add_season(pure)
