@@ -20,13 +20,12 @@ five_days = timedelta(days=5)
 
 #go through the tweets
 for tweet in collection.find():
-	get tweet_date et tweet_team
 	tweet_date = tweet["date"]
 	tweet_team = tweet["team"]
 
 	for match in match_days:
 
-		if tweet_date > datetime.strptime(match[0], '%Y-%m-%d %H:%M:%S')-five_days: and tweet_date < datetime.strptime(match[0], '%Y-%m-%d %H:%M:%S'):
+		if tweet_date > datetime.strptime(match[0], '%Y-%m-%d %H:%M:%S')-five_days and tweet_date < datetime.strptime(match[0], '%Y-%m-%d %H:%M:%S'):
 			if tweet_team == match[1].lower():
 				if int(match[3]) > int(match[4]):
 					db[tweet_team+'_win'].insert(tweet)
