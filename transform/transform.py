@@ -85,24 +85,28 @@ def transform(id, text, hashtags, d, ss):
  
 def add_matchday(collection, filename, start):
     headings = ["date", "home", "away", "matchday"]
-    matches = pd.read_csv(filename, header=headings)
+    print("read csv")
+    matches = pd.read_csv(filename, header=None, names=headings)
     
-    for match in matches:
-        matchday = row['date']
-        home_team = row['home']
+    i=0
+    for index, row in matches.iterrows():
+        matchdate = datetime.strptime(row['date'], "%Y-%m-%d %H:%M:%S")
+        home_team =row['home']
         away_team = row['away']
         matchday = row['matchday']
-        home_query = {"team": home_team.lower(), "date": {"$gte": start}, "date": {"$lt": end}, "matchday": {"$exitsts": False}}
-        away_query = {"team": away_team.lower(), "date": {"$gte": start}, "date": {"$lt": end}, "matchday": {"$exitsts": False}}
-        home_set_doc = {"set": {"home/away": 'h', "matchday": matchday}}
-        away_set_doc = {"set": {"home/away": 'a', "matchday": matchday}}
-        collection.update(home_query, home_set_doc)
-        collection.update(away_query, away_set_doc)
-        start = end;
+        home_query = {"team": home_team.lower(), "date": {"$lte": matchdate}, "matchdate": {"$exists": False}}
+        away_query = {"team": away_team.lower(), "date": {"$lte": matchdate}, "matchdate": {"$exists": False}}
+        home_set_doc = {"$set": {"home/away": 'h', "matchday": int(matchday), "matchdate": matchdate}}
+        away_set_doc = {"$set": {"home/away": 'a', "matchday": int(matchday), "matchdate": matchdate}}
+        db.pure.update_many(home_query, home_set_doc)
+        db.pure.update_many(away_query, away_set_doc)
+        i +=1
+        if i%10 ==0:
+            print(i)
             
 def add_season(collection):
-    collection.update({"date": {"$lte": datetime(2015-6-1-0-0)}}, {"$set": "season": "14_15"})
-    collection.update({"date": {"$gt": datetime(2015-6-1-0-0)}}, {"$set": "season": "15_16"})
+    collection.update_many({"date": {"$lte": datetime(2015, 6, 1)}}, {"$set": {"season": "14_15"}})
+    collection.update_many({"date": {"$gt": datetime(2015, 6, 1)}}, {"$set": {"season": "15_16"}})
 
 def add_team(collection, dict):
     for key, value in dict.items():
@@ -115,7 +119,7 @@ def separate_teams(col, dict):
         team = element.key
         hashtags = element.value
         collection = db[team]
-        elements = col.find({"hashtag": {"$in": hahstags}}, {'text': 1, 'hashtags': 1, 'date': 1})
+        elements = col.find({"hashtag": {"$in": hashtags}}, {'text': 1, 'hashtags': 1, 'date': 1})
         collection.intsert(elements)
 
 def delete(collection, hastags):
@@ -127,7 +131,7 @@ def remove_words(text):
     words = list()
     for word in tagged_words:
         if word[1] in tags_to_keep:
-            if "." not in word[0]:
+            if "." not in word[0]
                 words.append(word[0].lower())
             
     return words
@@ -152,6 +156,6 @@ def create_team_dict(filename):
     return d
     
 dic = create_team_dict('./team_hashtag.csv')
-add_team(pure, dic)
-add_matchday(pure, './championship1415.csv', datetime(2014-8-10-0-0))
-add_season(pure)
+#add_team(pure_col, dic)
+add_matchday(pure_col, './championship1415.csv', datetime(2014, 8, 10))
+#add_season(pure_col)

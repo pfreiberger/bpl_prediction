@@ -24,10 +24,10 @@ client = MongoClient()
 db = client.TwitterPred
 
 # Choose the collection
-collection = db.screen_scraper
+collection = db.screen_scraper_new
 
 db2 = client.cleansed
-col2 = db2.pure_2
+col2 = db2.pure2
 
 
 count = 0
@@ -105,10 +105,16 @@ def stem_words(words):
 
 
 with open("myfile.txt", "w") as f:
+	j = 0
+	total = collection.count()
 	for tweet in collection.find(no_cursor_timeout=True):
 		_id = tweet["_id"]
+		j +=1
+		if j%10000==0:
+			print(str(j)+"/"+ str(total))
 		if col2.find_one({"_id": int(_id)}):
 			continue
+
 		hash_one=False
 		hash_two=False
 		if 'text' in tweet.keys():
