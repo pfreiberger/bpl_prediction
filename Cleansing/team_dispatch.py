@@ -11,6 +11,7 @@ client = MongoClient()
 
 # Connection to the database
 db = client['cleansed']
+db2 = client['team_results']
 
 # Choose the collection
 collection = db['season14_15']
@@ -18,28 +19,63 @@ collection = db['season14_15']
 #define timedelta
 five_days = timedelta(days=5)
 
-#go through the tweets
-for tweet in collection.find():
-	tweet_date = tweet["date"]
-	tweet_team = tweet["team"]
 
-	for match in match_days:
+def insert_tweet(name, score1, score2, tweet):
+	if int(score1) > int(score2):
+		db2[name+'_win'].insert(tweet)
 
-		if tweet_date > datetime.strptime(match[0], '%Y-%m-%d %H:%M:%S')-five_days and tweet_date < datetime.strptime(match[0], '%Y-%m-%d %H:%M:%S'):
-			if tweet_team == match[1].lower():
-				if int(match[3]) > int(match[4]):
-					db[tweet_team+'_win'].insert(tweet)
+	elif int(score1) == int(score2):
+		db2[name+'_draw'].insert(tweet)
+
+	else:
+		db2[name+'_lose'].insert(tweet)
+
+	
+i=0
+for match in match_days:
+	dte = datetime.strptime(match[0], '%Y-%m-%d %H:%M:%S')
+	home = match[1].lower()
+	away = match[2].lower()
+	for tweet in collection.find({"team": home, "matchdate": dte}):
+		insert_tweet(home, match[3], match[4], tweet)
+	for tweet in collection.find({"team": away, "matchdate": dte}):
+		insert_tweet(away, match[4], match[3], tweet)
+
+	i += 1
+	if i%10 ==0:
+		print(i)
+
+
+
+""" #for tweet in collection.find():
+#	tweet_date = tweet["date"]
+#	tweet_team = tweet["team"]
+#
+#	for match in match_days:
+#
+#		if tweet_date > datetime.strptime(match[0], '%Y-%m-%d %H:%M:%S')-five_days and tweet_date < datetime.strptime(match[0], '%Y-%m-%d %H:%M:%S'):
+#				if int(match[3]) > int(match[4]):
+					db2[tweet_team+'_win'].insert(tweet)
+					continue
 
 				elif int(match[3]) == int(match[4]):
-					db[tweet_team+'_draw'].insert(tweet)
+					db2[tweet_team+'_draw'].insert(tweet)
+					continue
 
-				else: db[tweet_team+'_lose'].insert(tweet)
+				else:
+					db2[tweet_team+'_lose'].insert(tweet)
+					continue
 
 			if tweet_team == match[2].lower():
 				if int(match[4]) > int(match[3]):
-					db[tweet_team+'_win'].insert(tweet)
+					db2[tweet_team+'_win'].insert(tweet)
+					continue
 
 				elif int(match[4]) == int(match[3]):
-					db[tweet_team+'_draw'].insert(tweet)
+					db2[tweet_team+'_draw'].insert(tweet)
+					continue
 
-				else: db[tweet_team+'_lose'].insert(tweet)
+				else:
+					db2[tweet_team+'_lose'].insert(tweet)
+					continue
+"""
