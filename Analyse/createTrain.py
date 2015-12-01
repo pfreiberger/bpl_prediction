@@ -1,8 +1,16 @@
 #creating training sets
 from collections import OrderedDict
 import pandas as pd
+import pymongo
+
+client = pymongo.MongoClient()
+db = client['team_results']
+
 
 path = "./trainsets/"
+
+team_names = ['arsenal']
+words = ["arsen", "win", "lose", "draw","jack", "ramesy", "word", "watch", "big", "good", "legend", "love"]
 
 def inc(word_dict, words):
     for word in words:
@@ -22,11 +30,11 @@ def get_df(collection, words, res):
             word_dict = inc(word_dict, tweet['text'])           
             df = df.append(word_dict, ignore_index=True)
             
-        
+        print(i)
         i+=1
   
-def getTrainSets(teams, words, res):
-    for team in teams:
+def getTrainSets(teams, words):
+    for team_name in teams:
         col_win = db[team_name+'_win']
         col_lose = db[team_name+'_lose']
         col_draw = db[team_name+'_draw']
@@ -39,5 +47,6 @@ def getTrainSets(teams, words, res):
         df_main.append(df_draw, ignore_index=True)
         df.to_csv(path+team+"_train.csv")
         
-        
+
+getTrainSets(team_names, words)        
     
