@@ -3,9 +3,13 @@ from collections import OrderedDict
 import pandas as pd
 import pymongo
 
+from joblib import Parallel, delayed
+import multiprocessing
+
 client = pymongo.MongoClient()
 db = client['team_results']
 
+num_cores = multiprocessing.cpu_count()
 
 path = "./trainsets/"
 
@@ -52,6 +56,20 @@ def getTrainSets(teams):
         df_main = df_main.append(df_draw, ignore_index=True)
         df_main = df_main.to_csv(path+team_name+"_train.csv", index=False)
   
+        
+def write_files(team_name, words):
+    col_win = db[team_name+'_win']
+    col_lose = db[team_name+'_lose']
+    col_draw = db[team_name+'_draw']
+    df_main = pd.DataFrame()
+    df_win = get_df(col_win, words, 1)
+    df_lose = get_df(col_lose, words, -1)
+    df_draw = get_df(col_draw, words, 0)
+    df_main.append(df_win, ignore_index=True)
+    df_main.append(df_lose, ignore_index=True)
+    df_main.append(df_draw, ignore_index=True)
+    df.to_csv(path+team+"_train.csv")
+    
 
 def get_words(team_name):
     with open(team_name+'words.txt', 'r') as f
