@@ -10,11 +10,11 @@ db = client.TwitterPred
 
 # Choose the collection
 user_tweets = db.UserTweets
-screenscraper = db.screen_scraper
+screenscraper = db.screen_scraper_new
 twitter = db.Twitter
 
 db2 = client.cleansed
-pure = db2.pure
+pure = db2.pure2
 
 
 def get_date(tweet):
