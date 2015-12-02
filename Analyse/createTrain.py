@@ -76,6 +76,7 @@ def get_words(team_name):
         words = f.readlines()     
     return words 
 
+Parallel(n_jobs=num_cores)(delayed(write_files)(team_name) for team_name in teams) 
 
 getTrainSets(team_names)        
     
