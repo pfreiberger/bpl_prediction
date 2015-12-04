@@ -2,7 +2,7 @@ import _mysql
 import sys
 import os
 STATSPATH = "../../../Stats/"
-
+CURRENTSEASON= "../../../CurrentSeason/"
 from DBInsertion import *
 
 class DBCreation(object):
@@ -13,8 +13,7 @@ class DBCreation(object):
 	def create(self):
 		try:
 			database = _mysql.connect('localhost', 'root', 'root', 'EPL2'); #login, password, database
-			#years=["1011","1112","1213","1314","1415","1516"]
-			years=["1011","1112","1213","1314"]
+			years=["1011","1112","1213","1314","1415","1516"]
 			for year in years:
 				database.query(
 					"CREATE TABLE IF NOT EXISTS ranking"+str(year)+" \
@@ -67,9 +66,15 @@ class DBCreation(object):
 			allFiles=os.listdir(STATSPATH)
 			print("Inserting Stat into the DB, this may take some while ...")
 			for files in allFiles:
-				if ("Processed" in files and not "1415" in files):
+				if ("Processed" in files):
 					print("Processing File :"+str(files))
 					insertion=DBInsertion(STATSPATH+files,"Stat","Null")
+					insertion.parse()
+			allFiles=os.listdir(CURRENTSEASON)
+			print("Inserting Latest season into the DB, this may take some while ...")
+			for files in allFiles:
+				if ("Stats" in files):
+					insertion=DBInsertion(CURRENTSEASON+files,"StatCurrent","Null")
 					insertion.parse()
 			database.close();
 			print("Done creating Table")

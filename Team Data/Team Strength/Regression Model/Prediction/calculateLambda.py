@@ -89,8 +89,9 @@ class Lambda(object):
 			self.compareProb(game,proba)
 			count+=1
 
-		return(round((self.successScore*100.0)/(len(self.seasonGame)*1.0)), \
-			   round((self.successOutCome*100.0)/(len(self.seasonGame)*1.0)))
+
+		return((self.successScore*100.0)/(len(self.seasonGame)*1.0), \
+			   (self.successOutCome*100.0)/(len(self.seasonGame)*1.0))
 
 	def printResult(self):
 		print("Score Success : "+str(round((self.successScore*100.0)/(len(self.seasonGame)*1.0)))+"%")
@@ -112,16 +113,14 @@ class Lambda(object):
 
 
 	def printStat(self,game,proba):
-		#if ("-1" in str(game[3])): # It means its a game from the current seaon that has not been played yet
-		#print(proba)
-		print("MATCH : "+game[1]+" ---- "+game[2])
-		print("Home Win : "+str(round(proba[0]))+"%")
-		print("Away Win : "+str(round(proba[1]))+"%")
-		print("Draw : "	   +str(round(proba[2]))+"%")
-		print("Expected score is : "+str(proba[3])+"-"+str(proba[4]))
-		print("Real score is : "+str(game[3]+"-"+str(game[4])))
-		#print("Real Score is still unknown")
-		print("-----------------------------------------")
+		if ("-1" in str(game[3])): # It means its a game from the current seaon that has not been played yet
+			print("MATCH : "+game[1]+" ---- "+game[2])
+			print("Home Win : "+str(round(proba[0]))+"%")
+			print("Away Win : "+str(round(proba[1]))+"%")
+			print("Draw : "	   +str(round(proba[2]))+"%")
+			print("Expected score is : "+str(proba[3])+"-"+str(proba[4]))
+			print("Real Score is still unknown")
+			print("-----------------------------------------")
 
 	def probabilities(self):
 		homeWin=0

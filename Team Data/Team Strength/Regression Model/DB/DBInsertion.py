@@ -4,6 +4,7 @@ import os
 from os import listdir
 import time
 RANKINGPATH = "../../../Ranking/"
+CURRENTSEASON="../../../CurrentSeason/"
 
 class DBInsertion(object):
 	"""Insert values of the pre-processed files in the database"""
@@ -60,14 +61,25 @@ class DBInsertion(object):
 			attributes=line.split("#")
 			if (self.statOrRank=="Stat"):
 				self.insertStats(attributes)
-			else:
+			elif(self.statOrRank=="Rank"):
 				self.insertRank(attributes)
+			else:
+				self.insertCurrentSeason(attributes)
 			line=self.myfile.readline()
 		try:
 			self.database.close();
 		except (_mysql.Error):
 			print ("Error while closing MySQL ")
 			sys.exit(1)
+
+
+	def insertCurrentSeason(self,attr): 
+		year=self.getYear()
+		firstline=firstline="INSERT INTO championship"+year+" (GameDate,HomeTeam,AwayTeam,FTHG,FTAG,MatchDay) VALUES "
+		mydate=self.convertToDateTime(attr[0])
+		query="(\""+mydate+"\", \""+attr[1]+"\", \""+attr[2]+"\", \""+attr[3]+"\", \""+attr[4]+"\", \""+attr[5]+"\" ); \n"
+		finalRequest=firstline+query
+		self.database.query(finalRequest)
 
 	def convertToDateTime(self,date):
 		splittedDate=date.split("/")
