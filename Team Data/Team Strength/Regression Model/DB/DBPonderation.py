@@ -1,9 +1,9 @@
 import _mysql
 import MySQLdb
 import sys
-
+from math import *
 GAMESTOADAPT=6
-NEWTEAMLAMBDA=0.8
+NEWTEAMLAMBDA=-0.5
 
 class DBPonderation(object):
 	"""docstring for DBPonderation"""
@@ -28,7 +28,10 @@ class DBPonderation(object):
 					vec=[]
 					newTeam=False
 					for attrib in range (1 , len(S2Team)):
-						res=((float(S1Team[attrib])*38 + float(S2Team[attrib])*GAMESTOADAPT)*1.0)/((38+GAMESTOADAPT)*1.0)
+						##c'est comme si t'avais 38 valeur v1 et 6 v2 => log( 38 exp(v1)/44 + 6 exp(v2)/ 44)
+						term1=(38*exp(float(S1Team[attrib])))/(38+GAMESTOADAPT)
+						term2=(GAMESTOADAPT*exp(float(S2Team[attrib])))/(38+GAMESTOADAPT*1.0)
+						res=log(term1+term2)
 						if (S2Team[0]=="Man United" and attrib==len(S2Team)-1):
 							self.betaHome=res
 						elif (S2Team[0]=="Man United" and attrib==len(S2Team)-2):
@@ -38,7 +41,9 @@ class DBPonderation(object):
 			if (newTeam == True): # IF its a new team in the championship
 				vec=[]
 				for attrib in range (1 , len(S2Team)):
-					res=(NEWTEAMLAMBDA*38 + (float(S2Team[attrib])*GAMESTOADAPT)*1.0)/((38+GAMESTOADAPT)*1.0)
+					term1=(38*exp(NEWTEAMLAMBDA))/(38+GAMESTOADAPT)
+					term2=(GAMESTOADAPT*exp(float(S2Team[attrib])))/(38+GAMESTOADAPT*1.0)
+					res=log(term1+term2)
 					vec.append(res)
 				self.updateValue(S2Team[0],vec)
 		self.giveSameBeta()
@@ -48,11 +53,10 @@ class DBPonderation(object):
 	def updateValue(self,team,vec):
 		self.cursor.execute ("""
 					   UPDATE ranking"""+str(self.season2)+"""
-					   SET HomeAttack=%s, HomeDefense=%s, AwayAttack=%s, AwayDefense=%s, Beta=%s, BetaHome=%s
+					   SET Attack=%s, Defense=%s, Beta=%s, BetaHome=%s
 					   WHERE Team=%s
 					""", (float("{0:.4f}".format(float(vec[0]))),float("{0:.4f}".format(float(vec[1]))), \
-						  float("{0:.4f}".format(float(vec[2]))),float("{0:.4f}".format(float(vec[3]))), \
-						  float("{0:.4f}".format(float(vec[4]))),float("{0:.4f}".format(float(vec[5]))), team))
+						  float("{0:.4f}".format(float(vec[2]))),float("{0:.4f}".format(float(vec[3]))), team))
 		self.database.commit()
 
 	def giveSameBeta(self):
@@ -76,7 +80,7 @@ class DBPonderation(object):
 
 	def getRows(self,season):
 		self.cursor.execute( 
-			"SELECT Team, HomeAttack,HomeDefense,AwayAttack,AwayDefense,Beta,BetaHome \
+			"SELECT Team, Attack,Defense,Beta,BetaHome \
 		 	FROM ranking"+str(season)
 		 	)
 		rows=self.cursor.fetchall()
