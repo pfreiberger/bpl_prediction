@@ -13,7 +13,8 @@ num_cores = multiprocessing.cpu_count()
 
 path = "./trainsets/"
 
-team_names = ['man united']
+team_names = ['Man United', 'Man City','Arsenal','Chelsea','Liverpool','West Ham','Leicester','Everton','Swansea','Crystal Palace','Tottenham','West Brom','Southampton','Aston Villa','Stoke','Newcastle','Sunderland']
+team_names = [team_name.lower().replace(" ", "_") for team_name in team_names]
 #words = ["arsen", "win", "lose", "draw","jack", "ramesy", "word", "watch", "big", "good", "legend", "love"]
 
 def inc(word_dict, words):
@@ -32,7 +33,7 @@ def get_df(collection, words, res):
     while(i<=38):
         word_dict = OrderedDict((word, 0) for word in words)
         word_dict['w/l/d'] = res
-        word_dict['matchday___xx'] = i
+        #word_dict['matchday___xx'] = i
         if collection.find_one({"matchday": i}):
             for tweet in collection.find({"matchday": i}):
                 word_dict = inc(word_dict, tweet['words'])           
@@ -41,42 +42,42 @@ def get_df(collection, words, res):
         i+=1
     return df
   
-def getTrainSets(teams):
+def get_train_sets(teams):
     for team_name in teams:
-	words = get_words(team_name)
-        col_win = db[team_name+'_win']
-        col_lose = db[team_name+'_lose']
-        col_draw = db[team_name+'_draw']
-        df_main = pd.DataFrame()
-        df_win = get_df(col_win, words, 1)
-        df_lose = get_df(col_lose, words, -1)
-        df_draw = get_df(col_draw, words, 0)
-        df_main = df_main.append(df_win, ignore_index=True)
-        df_main = df_main.append(df_lose, ignore_index=True)
-        df_main = df_main.append(df_draw, ignore_index=True)
-        df_main = df_main.to_csv(path+team_name+"_train.csv", index=False)
+        get_train_set(team_name)        
   
         
-def write_files(team_name, words):
-    col_win = db[team_name+'_win']
-    col_lose = db[team_name+'_lose']
-    col_draw = db[team_name+'_draw']
+def get_train_set(team_name):
+    words = get_words(team_name)
+    #words = ["arsen", "win", "lose", "draw","jack", "ramesy", "word", "watch", "big", "good", "legend", "love"]
+    col_win = db[team_name + '_win']
+    col_lose = db[team_name + '_lose']
+    col_draw = db[team_name + '_draw']
     df_main = pd.DataFrame()
     df_win = get_df(col_win, words, 1)
     df_lose = get_df(col_lose, words, -1)
     df_draw = get_df(col_draw, words, 0)
-    df_main.append(df_win, ignore_index=True)
-    df_main.append(df_lose, ignore_index=True)
-    df_main.append(df_draw, ignore_index=True)
-    df.to_csv(path+team+"_train.csv")
+    df_main = df_main.append(df_win, ignore_index=True)
+    df_main = df_main.append(df_lose, ignore_index=True)
+    df_main = df_main.append(df_draw, ignore_index=True)
+    df_main.to_csv(path + team_name + "_train.csv", index=False)
     
 
 def get_words(team_name):
-    with open(team_name+'words.txt', 'r') as f
-        words = f.readlines()     
+    with open("./popular/"+team_name+'_popular.txt', 'r') as f:
+        words = f.readlines() 
+    words = [word.strip() for word in words]    
     return words 
 
-Parallel(n_jobs=num_cores)(delayed(write_files)(team_name) for team_name in teams) 
+def get_bigrams():
+    with open("./popular/"+team_name+'_popular.txt', 'r') as f:
+        words = f.readlines() 
+    words = [word.strip() for word in words]    
+    return words 
 
-getTrainSets(team_names)        
+if __name__ == "__main__":
+    Parallel(n_jobs=num_cores)(delayed(get_train_set)(team_name) for team_name in team_names) 
+       
+
+#get_train_set("arsenal")
     

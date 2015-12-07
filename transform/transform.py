@@ -13,7 +13,7 @@ del_tags = ["http", "\@", "app"]
 
 server = pymongo.MongoClient('localhost', 27017)
 db = server['cleansed']
-pure_col = db['pure']
+pure_col = db['season15_16']
 
 
 
@@ -84,7 +84,7 @@ def transform(id, text, hashtags, d, ss):
     return doc
  
 def add_matchday(collection, filename, start):
-    headings = ["date", "home", "away", "matchday"]
+    headings = ["date", "home", "away", "homescore", "awayscore", "matchday"]
     print("read csv")
     matches = pd.read_csv(filename, header=None, names=headings)
     
@@ -98,8 +98,8 @@ def add_matchday(collection, filename, start):
         away_query = {"team": away_team.lower(), "date": {"$lte": matchdate}, "matchdate": {"$exists": False}}
         home_set_doc = {"$set": {"home/away": 'h', "matchday": int(matchday), "matchdate": matchdate}}
         away_set_doc = {"$set": {"home/away": 'a', "matchday": int(matchday), "matchdate": matchdate}}
-        db.pure.update_many(home_query, home_set_doc)
-        db.pure.update_many(away_query, away_set_doc)
+        collection.update_many(home_query, home_set_doc)
+        collection.update_many(away_query, away_set_doc)
         i +=1
         if i%10 ==0:
             print(i)
@@ -131,7 +131,7 @@ def remove_words(text):
     words = list()
     for word in tagged_words:
         if word[1] in tags_to_keep:
-            if "." not in word[0]
+            if "." not in word[0]:
                 words.append(word[0].lower())
             
     return words
@@ -154,8 +154,17 @@ def create_team_dict(filename):
             values = [x.lower() for x in values]
             d[key] = values
     return d
+
+def transfer(col1, col2, query={}):
+    for tweet in col1.find(query):
+        try:
+            col2.insert(tweet)
+        except:
+            print("insertion error")
+
     
 dic = create_team_dict('./team_hashtag.csv')
 #add_team(pure_col, dic)
-add_matchday(pure_col, './championship1415.csv', datetime(2014, 8, 10))
+add_matchday(pure_col, './championship1516.csv', datetime(2015, 8, 1))
 #add_season(pure_col)
+#transfer(pure_col, db["season15_16"], {"season": "15_16"})
