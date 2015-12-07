@@ -3,6 +3,7 @@ import MySQLdb
 import sys
 import warnings
 import os
+import numpy as np
 warnings.filterwarnings("ignore", "Unknown table.*")
 
 sys.path.append('../Prediction/')
@@ -11,6 +12,7 @@ from calculateLambda import *
 from DBCreation import *
 from DBInsertion import *
 from DBPonderation import *
+from kappa import *
 
 RANKINGPATH = "../../../Ranking/"
 CURRENTSEASON="../../../CurrentSeason/"
@@ -21,14 +23,13 @@ XMAX=GAMESTOADAPT
 CURRENTMATCHDAY=13 # To change every week , represent the match day in the new current season
 
 
-
 if __name__ == '__main__':	
 	try:
 		database = MySQLdb.connect('localhost', 'root', 'root', 'EPL2'); #login, password, database
 		cursor=database.cursor()
 		# Create the DB  ------------- UNCOMMENT TO CREATE DB AGAIN
-		myDB=DBCreation()
-		myDB.create() 
+		#myDB=DBCreation()
+		#myDB.create() 
 		season=["1011","1112","1213","1314","1415","1516"]
 		count=0
 		while (count != len(season)-1):
@@ -72,16 +73,36 @@ if __name__ == '__main__':
 					XMIN+=1
 					XMAX+=1 
 			else:
+				kappaMatrix=[[0 for x in range(3)] for x in range (3)]
 				while (XMAX != 38): # 37 MatchDay so we can predict the last one of the season
 					myLambda=Lambda(nextSeason,database,XMIN,XMAX,0) # Predict Game XMAX+1 -> Next Game
 					result=myLambda.calculateLambda() # 0 = we dont want a print
 					scorePercentage+=result[0]
 					successPercentage+=result[1]
+					tmpKappaMatrix=result[2]
 					XMIN+=1
 					XMAX+=1 # Predict the Next Game
+					for i in range(3):
+						for j in range(3):
+							kappaMatrix[i][j]=kappaMatrix[i][j]+tmpKappaMatrix[i][j]
 				print("Final Correctness Prediction for season : "+str(nextSeason))
-				print("Score Success : "    +str((scorePercentage*1.0) /(38-GAMESTOADAPT))+"%")
-				print("Prediction Result : "+str((successPercentage*1.0) /(38-GAMESTOADAPT))+"%")
+				#print("Score Success : "    +str((scorePercentage*1.0) /(38-GAMESTOADAPT))+"%")
+				#print("Prediction Result : "+str((successPercentage*1.0) /(38-GAMESTOADAPT))+"%")
+				
+				print("	Predicted result  ")
+				vector=["W","L","D"]
+				print(" 	W 	L 	D")
+				print("")
+				for i in range(3):
+					print vector[i],
+					for j in range(3):
+						print kappaMatrix[i][j],
+						print "   ",
+					print("")
+				cohenKappa=Kappa(kappaMatrix)
+				kappaScore=cohenKappa.giveKappa()
+				print("Cohen's Kappa score : " +str(kappaScore))
+				
 			count+=1
 		
 		database.close();

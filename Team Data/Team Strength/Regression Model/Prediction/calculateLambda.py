@@ -1,8 +1,12 @@
 import _mysql
 import MySQLdb
 import sys
+import pymc
 from math import exp
 from math import factorial
+from math import sqrt
+from math import pi
+from math import log
 from random import *
 
 class Lambda(object):
@@ -24,7 +28,8 @@ class Lambda(object):
 		self.xmin=xmin
 		self.xmax=xmax
 		self.printOrNot=printOrNot
-		
+		self.kappaMatrix=[[0 for x in range(3)] for x in range(3)] # W L D
+
 	def getGames(self):
 		self.cursor.execute( 
 			"SELECT id, HomeTeam, AwayTeam, FTHG, FTAG, MatchDay \
@@ -69,10 +74,15 @@ class Lambda(object):
 			awayTeamAttr.append(str(attrib[3]))
 		return(homeTeamAttr,awayTeamAttr)
 
+
 	def calculateLambda(self):
 		"""
 		Get the LambdaHome = Beta * BetaHome * Offence(HomeTeam) * Defense(AwayTeam)
 		Get the LambdaAway = Beta * Offence(AwayTeam) * Defense(HomeTeam)
+		home = pymc.Normal('home', 0, .0001, value=0)
+		mu_att = pymc.Normal('mu_att', 0, .0001, value=0)
+		mu_def = pymc.Normal('mu_def', 0, .0001, value=0)
+
 		"""
 		self.getGames()
 		count=1
@@ -80,18 +90,72 @@ class Lambda(object):
 			attrib=self.getTeamAttr(game[1],game[2]) # id = 0, HomeTeam = 1, AwayTeam = 2, FTHG = 3, FTAG = 4, MatchDay = 5
 			#Attack=00, Defense=01, Beta=02, BetaHome=03
 			#Attack=10, Defense=11, Beta=12
+			#attackHome=float(attrib[0][0])
+			#defenseAway=float(attrib[1][1])
+			#betaHome=float(attrib[0][3])
+			
+			#attackHome = pymc.Normal('attackHome', 0, .0001, value=0)
+			#defenseAway = pymc.Normal('defenseAway', 0, .0001, value=0)
+			#betaHome = pymc.normal_like(betaHome, 0, 0.0001)
+			#print(" - "+str(betaHome ))
+
+			#attackAway=float(attrib[1][0])
+			#defenseHome=float(attrib[0][1])
+
+			#attackAway = pymc.Normal('attackAway', 0, .0001, value=0)
+			#defenseHome = pymc.Normal('defenseHome', 0, .0001, value=0)
+
+			#self.lambdaHome=exp(float(attrib[0][0])-float(attrib[1][1])+betaHome)
+			#self.lambdaAway=exp(float(attrib[1][0])-float(attrib[0][1]))
+
+			#self.lambdaHome=exp(attackHome-defenseAway+betaHome)
+			#self.lambdaAway=exp(attackAway-defenseHome)
+
 			self.lambdaHome=exp(float(attrib[0][0])-float(attrib[1][1])+float(attrib[0][3]))
 			self.lambdaAway=exp(float(attrib[1][0])-float(attrib[0][1]))
-			#print(self.lambdaHome,self.lambdaAway)
 			proba=self.probabilities()
 			#proba=self.probabilitiesImproved()
 			#self.printStat(game,proba)   # Decomment to see answer in terminal
 			self.compareProb(game,proba)
+			self.kappaAccuracy(game,proba)
 			count+=1
 
 
 		return((self.successScore*100.0)/(len(self.seasonGame)*1.0), \
-			   (self.successOutCome*100.0)/(len(self.seasonGame)*1.0))
+			   (self.successOutCome*100.0)/(len(self.seasonGame)*1.0),
+			   self.kappaMatrix)
+
+	def kappaAccuracy(self,game,proba):
+		"""
+		Kappa Matrix ,  proba[0]=Home Win, proba[1]=Away Win , proba[2]=Draw
+			Prediction
+			W L D
+		W 	- - -   Real
+		L   - - -   Sco
+		D   - - -   re
+		"""
+		if game[3]>game[4]: # If the Home Team Won
+			if (proba[0]>proba[1] and proba[0]>proba[2]): #If we predicted a win
+				self.kappaMatrix[0][0]+=1 # True Positive , we add 1 on the W-W diagonal
+			elif (proba[1]>proba[0] and proba[1]>proba[2]): #If we predicted an away win
+				self.kappaMatrix[0][1]+=1
+			else: #Draw
+				self.kappaMatrix[0][2]+=1
+		elif game[3]==game[4]:
+			if (proba[0]>proba[1] and proba[0]>proba[2]): #If we predicted a win
+				self.kappaMatrix[2][0]+=1 # True Positive , we add 1 on the D-D diagonal
+			elif (proba[1]>proba[0] and proba[1]>proba[2]): #If we predicted an away win
+				self.kappaMatrix[2][1]+=1
+			else: #Draw
+				self.kappaMatrix[2][2]+=1
+		else: # Away win
+			if (proba[0]>proba[1] and proba[0]>proba[2]): #If we predicted a win
+				self.kappaMatrix[1][0]+=1 # True Positive , we add 1 on the L-Ldiagonal
+			elif (proba[1]>proba[0] and proba[1]>proba[2]): #If we predicted an away win
+				self.kappaMatrix[1][1]+=1
+			else: #Draw
+				self.kappaMatrix[1][2]+=1
+
 
 	def printResult(self):
 		print("Score Success : "+str(round((self.successScore*100.0)/(len(self.seasonGame)*1.0)))+"%")
@@ -157,31 +221,22 @@ class Lambda(object):
 					awayGoal=j
 		return (homeWin*100,awayWin*100,draw*100,homeGoal,awayGoal)
 
-	"""
-	home = pymc.Normal('home', 0, .0001, value=0)
-	mu_att = pymc.Normal('mu_att', 0, .0001, value=0)
-	mu_def = pymc.Normal('mu_def', 0, .0001, value=0)
-
 	
-	"""
-
-	"""
 	def probabilitiesImproved(self):
 		home=[]
 		away=[]
-		for homeGoal in range(0,6):
-			for awayGoal in range(0,6):
-				home.append(self.poisson(self.lambdaHome,homeGoal))
-				away.append(self.poisson(self.lambdaAway,awayGoal))
+		prob=[[0 for x in range(10)] for x in range(10)]
+		for homeGoal in range(0,10):
+			for awayGoal in range(0,10):
+				home.append(self.lambdaHome)
+				away.append(self.lambdaAway)
 		meanX=0
 		meanY=0
 		for i in range(0,len(home)):
 			meanX+=home[i]
 			meanY+=away[i]
-		#print(meanX,meanY)
 		meanX=meanX/(len(home)*1.0)
 		meanY=meanY/(len(home)*1.0)
-		#print(meanX,meanY)
 		covariance=0
 		for i in range(0,len(home)):
 			res=(home[i]-meanX)*(away[i]-meanY)
@@ -190,33 +245,31 @@ class Lambda(object):
 		homeWin=0
 		awayWin=0
 		draw=0
-		homeScore=0
-		maxProbHome=0
-		awayScore=0
-		maxProbAway=0
-
-		for homeGoal in range(0,6):
-			for awayGoal in range(0,6):
+		#lambda3=0.001
+		for homeGoal in range(0,10):
+			for awayGoal in range(0,10):
 				lambda3=covariance
 				Pxy=self.poissonImproved(self.lambdaHome,self.lambdaAway,lambda3,homeGoal,awayGoal)
-				#away=self.poissonImproved(self.lambdaAway,self.lambdaHome,lambda3,awayGoal,homeGoal)
-				if (Pxy > maxProbHome):
-					homeScore=homeGoal
-					maxProbHome=Pxy
-				if (Pxy > maxProbAway ):
-					awayScore=awayGoal
-					maxProbAway=Pxy
 				if (homeGoal > awayGoal ): #If the Home team wins
 					homeWin+=Pxy
 				elif (homeGoal == awayGoal):
 					draw+=Pxy
 				else:
 					awayWin+=Pxy
-		return (homeWin*100,awayWin*100,draw*100,homeScore,awayScore)
-	"""
+		score=0
+		homeGoal=0
+		awayGoal=0
+		for i in range(10):
+			for j in range(10):
+				if prob[i][j]>score:
+					score=prob[i][j]
+					homeGoal=i
+					awayGoal=j
+		return (homeWin*100,awayWin*100,draw*100,homeGoal,awayGoal)
+	
 	def poisson(self,lambda_,x):
 		return ((exp(-lambda_)*(lambda_**x))/(factorial(x)))
-	"""
+	
 	def poissonImproved(self,l1,l2,l3,x,y):
 		resOne=exp(-(l1+l2+l3))
 		resTwo=((l1**x)*(l2**y))/((factorial(x))*(factorial(y)))
@@ -241,4 +294,4 @@ class Lambda(object):
 			b = factorial(y)
 			div = ((a*1.0)/(b*(x-y)*1.0))
 			return div
-	"""
+	
