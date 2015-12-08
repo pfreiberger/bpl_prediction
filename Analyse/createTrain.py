@@ -8,6 +8,7 @@ import multiprocessing
 
 client = pymongo.MongoClient()
 db = client['team_results']
+db = client['n_grams']
 
 num_cores = multiprocessing.cpu_count()
 
@@ -69,11 +70,51 @@ def get_words(team_name):
     words = [word.strip() for word in words]    
     return words 
 
-def get_bigrams():
-    with open("./popular/"+team_name+'_popular.txt', 'r') as f:
+
+
+def get_bigrams(input_lst, n):
+    return list(zip(*[input_lst[i:] for i in range(n)]))
+
+#returns list of list of bigrams
+def read_popular_bigrams(team_name):
+    with open("./popular/" +team_name+"_bigrams.txt", 'r') as f:
         words = f.readlines() 
-    words = [word.strip() for word in words]    
+    words = [word.replace("'","").split(",") for word in words]
     return words 
+
+def get_df_bigram(collection, words, res):
+    df = pd.DataFrame(columns=words)
+    
+    
+    i=1
+    while(i<=38):
+        word_dict = OrderedDict((word, 0) for word in words)
+        word_dict['w/l/d'] = res
+        #word_dict['matchday___xx'] = i
+        if collection.find_one({"matchday": i}):
+            for word in words:
+                for tweet in collection.find({"matchday": i}):
+                    word_dict = inc(word_dict, get_bigrams(tweet['words']))           
+                df = df.append(word_dict, ignore_index=True)
+            
+        i+=1
+    return df
+
+
+
+def get_train_set_bigram(team_name):
+    col_win = db[team_name + '_win']
+    col_lose = db[team_name + '_lose']
+    col_draw = db[team_name + '_draw']
+    df_main = pd.DataFrame()
+    df_win = get_df_bigram(col_win, words, 1)
+    df_lose = get_df_bigram(col_lose, words, -1)
+    df_draw = get_df_bigram(col_draw, words, 0)
+    
+    df_main = df_main.append(df_win, ignore_index=True)
+    df_main = df_main.append(df_lose, ignore_index=True)
+    df_main = df_main.append(df_draw, ignore_index=True)
+    df_main.to_csv(path + team_name + "_train.csv", index=False)
 
 if __name__ == "__main__":
     Parallel(n_jobs=num_cores)(delayed(get_train_set)(team_name) for team_name in team_names) 
