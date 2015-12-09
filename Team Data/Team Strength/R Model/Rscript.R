@@ -1,9 +1,9 @@
 #!/usr/bin/env Rscript
 # Reference : http://www1.maths.leeds.ac.uk/~voss/projects/2010-sports/JamesGardner.pdf
-arg <- commandArgs(TRUE)
+arg <- commandArgs(TRUE) # To be able to receive arguments
 games<-read.table(arg[1],sep=",",stringsAsFactors=F)
 
-gamesToPredict<-as.numeric(arg[3])*10
+gamesToPredict<-as.numeric(arg[3])*10 # We receive the number of week, we have to multiply it by 10
 homeGoals<-sum(games[3][1:gamesToPredict,]) 
 awayGoals<-sum(games[4][1:gamesToPredict,]) 
 
@@ -11,11 +11,11 @@ awayGoals<-sum(games[4][1:gamesToPredict,])
 gamesNumber<-gamesToPredict
 Y<- matrix(0,2*gamesNumber,1) # Form the Y Matrix containing all the game result
 for (i in 1:gamesNumber){
-	Y[((2*i)-1)] <- games[i,3]  # Every odd elements (we start at 1) ill be the home score
+	Y[((2*i)-1)] <- games[i,3]  # Every odd elements (we start at 1) will be the home score
 	Y[(2*i)]     <- games[i,4]  # Every even elements (start at 2) will be the away score
 }
 
-betavalue<- ((homeGoals+awayGoals)/(2*(gamesNumber)))
+betavalue<- ((homeGoals+awayGoals)/(2*(gamesNumber))) # Improvment from original method, add the beta value
 
 #  Create the R Matrix
 teams<- sort(unique(c(games[,1],games[,2])),decreasing=FALSE) # Give all the teams name
@@ -34,7 +34,7 @@ for (i in 1:gamesNumber){
 
 }
 
-XX <- X[,-1] # Tountenberg , first column put away (here Arsenal) and replaced by 0 to be the benchmark
+XX <- X[,-1] # Tountenberg , first column put away (here Arsenal) and replaced by 0 to be the benchmark.
 
 # Estimating Beta + Print in a good format
 parameters <- glm(formula = Y ~ 0 + XX, family = poisson)

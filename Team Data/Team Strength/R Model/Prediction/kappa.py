@@ -1,7 +1,7 @@
 # Reference : http://psych.unl.edu/psycrs/handcomp/hckappa.PDF
 
 class Kappa(object):
-	"""docstring for Kappa"""
+	"""Create the kappa score given a confusion matrix"""
 	def __init__(self, matrix):
 		super(Kappa, self).__init__()
 		self.kappaMatrix = matrix

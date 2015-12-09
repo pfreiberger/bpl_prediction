@@ -28,7 +28,6 @@ class DBPonderation(object):
 					vec=[]
 					newTeam=False
 					for attrib in range (1 , len(S2Team)):
-						##c'est comme si t'avais 38 valeur v1 et 6 v2 => log( 38 exp(v1)/44 + 6 exp(v2)/ 44)
 						term1=(38*exp(float(S1Team[attrib])))/(38+GAMESTOADAPT)
 						term2=(GAMESTOADAPT*exp(float(S2Team[attrib])))/(38+GAMESTOADAPT*1.0)
 						res=log(term1+term2)

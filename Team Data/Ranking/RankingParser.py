@@ -2,20 +2,9 @@ import os
 from os import listdir
 import time
 PATH = "../Ranking/"
-"""
-rank
-team
-played
-wins
-draws
-losses
-goals-for
-goals-against
-goals-dff
-points
-"""
+
 class Parser(object):
-	"""Pars the Ranking files"""
+	"""Pars the Ranking files. Format will be: rank,team,played,wins,draws,losses,goals-for,goals-against,goals-dff,points"""
 	def __init__(self, filename):
 		super(Parser, self).__init__()
 		self.filename=filename

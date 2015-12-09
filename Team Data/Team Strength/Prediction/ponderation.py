@@ -6,7 +6,7 @@ GAMESTOADAPT=6
 NEWTEAMLAMBDA=0.8
 
 class DBPonderation(object):
-	"""docstring for DBPonderation"""
+	"""Put the 2 seasons together by pondering their values"""
 	def __init__(self, database,season1,season2):
 		super(DBPonderation, self).__init__()
 		self.database = database
@@ -57,7 +57,7 @@ class DBPonderation(object):
 
 	def giveSameBeta(self):
 		"""
-		If a new team joins the league, she doesn't has the right Beta score and Beta Home score because we still makes an average
+		If a new team joins the league, she doesn't has the right Beta score and Beta Home score because we still makes an average of it
 		"""
 		for S2Team in self.table2Rows:
 			newTeam=True

@@ -3,7 +3,7 @@ from os import listdir
 
 
 class Parser(object):
-	"""docstring for Parser"""
+	"""Pars the .csv file because we need a different input for our R script."""
 	def __init__(self, filename,specialCSV):
 		super(Parser, self).__init__()
 		self.file=open(filename)
