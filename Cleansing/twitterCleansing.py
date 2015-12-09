@@ -1,3 +1,4 @@
+#script to clean the raw tweets
 # -*- coding: utf-8 -*-
 
 import re
@@ -75,7 +76,7 @@ def get_hashtags(tweet):
 	except:
 		x = 1
 
-
+#transform a tweet in a format that we can use with the words stemed
 def transform(id, text, hashtags, dte):
 	words = remove_words(text)
 	stemmed_words = stem_words(words)
@@ -103,7 +104,7 @@ def stem_words(words):
 		res.append(stem)
 	return res
 
-
+#loop the cleaning to all the tweets
 with open("myfile.txt", "w") as f:
 	j = 0
 	total = collection.count()

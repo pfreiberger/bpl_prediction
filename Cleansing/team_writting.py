@@ -1,3 +1,4 @@
+#script to write the tweets in different file for the word count
 # -*- coding: utf-8 -*-
 
 import re
@@ -27,7 +28,7 @@ for team in team_names_15_16:
 	collection_lose = db[team.lower()+'_lose']
 	collection_draw = db[team.lower()+'_draw']
 
-	file_write("team_results_1516/"+team.lower()+"_win.txt", collection_win)
+	file_write("team_results_1516/"+team.lower()+"_win.txt", collection_win)#write in the file win
 	file_write("team_results_1516/"+team.lower()+"_lose.txt", collection_lose)
 	file_write("team_results_1516/"+team.lower()+"_draw.txt", collection_draw)
 
