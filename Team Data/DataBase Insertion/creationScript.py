@@ -59,7 +59,7 @@ if __name__ == '__main__':
 					); \
 					"
 				);
-			else:
+			else: # We didn't took the bookmaker's odds for the last season so the table is a bit different
 				database.query(
 					"CREATE TABLE IF NOT EXISTS championship"+str(year)+" \
 					( \

@@ -133,6 +133,7 @@ class Lambda(object):
 		W 	- - -   Real
 		L   - - -   Sco
 		D   - - -   re
+		Return a confusion matrix
 		"""
 		if game[3]>game[4]: # If the Home Team Won
 			if (proba[0]>proba[1] and proba[0]>proba[2]): #If we predicted a win

@@ -3,7 +3,7 @@ import MySQLdb
 import sys
 
 class Ranking(object):
-	"""docstring for Ranking"""
+	"""Create the ranking for the current season thanks to the game results already been played. """
 	def __init__(self, aFile,database):
 		super(Ranking, self).__init__()
 		self.database = database
@@ -16,6 +16,9 @@ class Ranking(object):
 		self.cursor = self.database.cursor()
 
 	def calculateRanking(self):
+		"""
+		Generate the ranking for a team and insert it into the DB
+		"""
 		self.getTeams()
 		for team in self.allTeams:
 			self.generalRanking.append(self.getScore(team))
@@ -28,7 +31,7 @@ class Ranking(object):
 		rank=1
 		while (len(tmp)>0):
 			score=0
-			diffGoal=-999
+			diffGoal=-999 # Fake Infinite number
 			bestRank=""
 			for team in tmp:
 				if team[9]>score: # Get The best Team
@@ -36,7 +39,7 @@ class Ranking(object):
 					diffGoal=team[8]
 					bestRank=team[1] # We keep the name of the best team in the current tmp lst
 				elif team[9]==score:
-					if (team[8]>diffGoal):
+					if (team[8]>diffGoal): # If the teams have the same scores, we have to look at the goal difference to classify them
 						score=team[9]
 						diffGoal=team[8]
 						bestRank=team[1] # We keep the name of the best team in the current tmp lst
@@ -48,7 +51,7 @@ class Ranking(object):
 					rank+=1
 			i=0
 			while (i < len(tmp)):
-				if (tmp[i][1]==bestRank):
+				if (tmp[i][1]==bestRank): # We have our best team, we can withdraw it from our vector for the next iteration
 					newlst=[]
 					for elem in tmp:
 						if elem[1]!=bestRank:
@@ -102,22 +105,22 @@ class Ranking(object):
 	def getScore(self,aTeam):
 		self.aTeam[1]=aTeam
 		for line in self.allLines:
-			if (not "-1" in line ):
+			if (not "-1" in line ): # When the score is -1 it means its a game that hasn't been played yet
 				line=line.split("#")
 				if (line[1]==aTeam):
 					self.homeScore(line)
 				elif (line[2]==aTeam):
 					self.awayScore(line)
-		self.aTeam[2]=self.aTeam[3]+self.aTeam[4]+self.aTeam[5]
-		self.aTeam[8]=self.aTeam[6]-self.aTeam[7]
+		self.aTeam[2]=self.aTeam[3]+self.aTeam[4]+self.aTeam[5] # Number of games played
+		self.aTeam[8]=self.aTeam[6]-self.aTeam[7] # Goals Differences
 		return self.aTeam
 
 	def homeScore(self,line):
 		if (line[3]>line[4]):
-			self.aTeam[3]+=1 # Add a win
+			self.aTeam[3]+=1 # Add points for a win
 			self.aTeam[9]+=3
 		elif (line[3]==line[4]):
-			self.aTeam[4]+=1 # Add a Draw
+			self.aTeam[4]+=1 # Add points for a Draw
 			self.aTeam[9]+=1
 		else:
 			self.aTeam[5]+=1 # Add a Lose

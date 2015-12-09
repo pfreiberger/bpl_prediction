@@ -4,7 +4,7 @@ import sys
 from math import exp
 
 class PoissonDistrib(object):
-	"""We will calculate the Attack and Defence Strength for each them. 
+	"""We will calculate the Attack and Defence Strength for each team. 
 		First Step : Determine the average number of goals per team, per home game, per away games.
 		Second Step : For every team, find the number of goals scored last season and / by the number of home games.
 		Third Step : Divide step2/step1 to get the Attack's Strength of a team
@@ -106,7 +106,7 @@ class PoissonDistrib(object):
 			homeAway="HomeTeam"
 			choice=3
 		else:
-			print("ERROR")
+			print("ERROR") # Should neveer happend
 		self.appendToList(choice,goal,homeAway,team)
 
 	def appendToList(self,choice,goal,homeAway,team):

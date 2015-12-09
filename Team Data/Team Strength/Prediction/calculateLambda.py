@@ -17,7 +17,7 @@ class Lambda(object):
 		self.lambdaAway=0
 		self.seasonGame=[]
 		self.successScore=0   # How good we predicted the score result (2-0 , ... )
-		self.successOutCome=0 # How good we predicted wins looses or draws
+		self.successOutCome=0 # How good we predicted wins losses or draws
 		self.realDraw=0
 		self.predictedDraw=0
 		self.cursor = database.cursor()
@@ -112,7 +112,7 @@ class Lambda(object):
 			self.lambdaAway=float(attrib[1][0])*float(attrib[0][1])*float(attrib[1][2])
 			proba=self.probabilities()
 			#proba=self.probabilitiesImproved()
-			self.printStat(game,proba)   # Decomment to see answer in terminal
+			#self.printStat(game,proba)   # Decomment to see answer in terminal
 			self.compareProb(game,proba)
 			count+=1
 		#self.printResult()
@@ -181,14 +181,6 @@ class Lambda(object):
 				else:
 					awayWin+=(home*away)
 		return (homeWin*100,awayWin*100,draw*100,homeScore,awayScore)
-
-	"""
-	home = pymc.Normal('home', 0, .0001, value=0)
-	mu_att = pymc.Normal('mu_att', 0, .0001, value=0)
-	mu_def = pymc.Normal('mu_def', 0, .0001, value=0)
-
-	
-	"""
 
 	"""
 	def probabilitiesImproved(self):

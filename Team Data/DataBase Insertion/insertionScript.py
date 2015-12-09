@@ -12,7 +12,7 @@ class DBInsertion(object):
 		super(DBInsertion, self).__init__()
 		self.filename=aFile
 		self.myfile=open(aFile)
-		self.statOrRank=statOrRank
+		self.statOrRank=statOrRank # Because ranking and statistic files dont have the same format, a different parser will be applied.
 
 		try:
 			self.database = _mysql.connect('localhost', 'root', 'root', 'EPL'); #login, password, database
@@ -30,6 +30,9 @@ class DBInsertion(object):
 		return year # Return 1011 / 1112 / 1213 or 1314
 
 	def parse(self):
+		"""
+		Call the good parser wether we have statistics, ranking or elements from the new season.
+		"""
 		line=self.myfile.readline()
 		while (line !=""):
 			line=line.strip("\n")
@@ -53,6 +56,9 @@ class DBInsertion(object):
 		return finalDate
 
 	def insertCurrentSeason(self,attr): 
+		"""
+		Needed because we do't have the odds of the bookmaker
+		"""
 		year=self.getYear()
 		firstline=firstline="INSERT INTO championship"+year+" (GameDate,HomeTeam,AwayTeam,FTHG,FTAG,MatchDay) VALUES "
 		mydate=self.convertToDateTime(attr[0])
@@ -70,8 +76,8 @@ class DBInsertion(object):
 
 	def insertRank(self,attr):
 		newlst=[]
-		for elem in attr:
-			if (elem!=""):
+		for elem in attr: 
+			if (elem!=""): # Some problems with a first empty element being created
 				newlst.append(elem)
 		attr=newlst
 		year=self.getYear()

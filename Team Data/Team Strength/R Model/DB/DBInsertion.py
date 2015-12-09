@@ -95,6 +95,10 @@ class DBInsertion(object):
 		self.database.query(finalRequest)
 
 	def insertRank(self,attr):
+		"""
+		The difference here with the other method is that we insert the lambda values now and we dont have to make an update later when they are calculated because
+		we already have them.
+		"""
 		newlst=[]
 		for elem in attr:
 			if (elem!=""):

@@ -20,21 +20,11 @@ pathToScript="Rscript.R"
 #Rscript Rscript.R $file1 $output1 38
 #Rscript Rscript.R $file2 $output2 6
 
-# Python Script for those args
-# Step 1 : Put them in the database
-# python python_script.py var1 var2 --> sys.argv[1]
-# Step 2 : Make the average
-# Step 3 : Make the prediction for season+1
-
 #Rscript Rscript.R $file2 $output2 38
 #Rscript Rscript.R $file3 $output3 6
 
-# Python Script for those args
-
 #Rscript Rscript.R $file3 $output3 38
 #Rscript Rscript.R $file4 $output4 6
-
-# Python Script for those args
 
 #Rscript Rscript.R $file4 $output4 38
 #Rscript Rscript.R $file5 $output5 6

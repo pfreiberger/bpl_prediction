@@ -1,5 +1,5 @@
 class Parser(object):
-	"""docstring for Parser"""
+	"""Parse the outcome file to process the statistics"""
 	def __init__(self, aFile):
 		super(Parser, self).__init__()
 		self.file = open(aFile,"r")
@@ -13,7 +13,7 @@ class Parser(object):
 		lines=self.file.readlines()
 		for line in lines:
 			if ("Matchday") in line:
-				self.matchday=self.getMatchDay(line)
+				self.matchday=self.getMatchDay(line) 
 			elif ("[") in line:
 				self.date=self.getDate(line)
 			elif ("-" in line):
@@ -25,21 +25,21 @@ class Parser(object):
 
 
 	def getGame(self,line):
-		lst=line.split(" ")
+		lst=line.split(" ") # We split our line
 		newlst=[]
 		for elem in lst:
 			if elem!="":
 				newlst.append(elem)
-		homeTeam=newlst[0]+newlst[1]
+		homeTeam=newlst[0]+newlst[1] # Home Team is alway element 0 and 1, but sometimes the home team is 3 words composed so it has to be ealt with
 		for i in range(2,4):
-			if ("-" in newlst[i]):
-				if (newlst[i]=="-"):
-					FTHG=-1
+			if ("-" in newlst[i]):  # If there is a - caracter, it means that the game has not been played yet
+				if (newlst[i]=="-"): 
+					FTHG=-1 # And we put -1 to say this
 					FTAG=-1
 				else:
-					FTHG=newlst[i][0]
+					FTHG=newlst[i][0] # Otherwise we take the score
 					FTAG=newlst[i][2]
-				awayTeam=newlst[i+1]+newlst[i+2].strip("\n")
+				awayTeam=newlst[i+1]+newlst[i+2].strip("\n") # and the away team name
 
 		homeTeam=self.setName(homeTeam)
 		awayTeam=self.setName(awayTeam)
@@ -54,7 +54,7 @@ class Parser(object):
 		return str(matchday)
 
 	def getDate(self,line):
-		date=line.split("[")
+		date=line.split("[") # We only play on the string to get the date in the format we want
 		date=date[1].split("]")
 		date=date[0]
 		date=date.split(" ")
@@ -66,7 +66,7 @@ class Parser(object):
 		finalDate=str(day)+"/"+self.getMonthDate(date[0])+"/"+"15"
 		return finalDate
 
-	def getMonthDate(self,month):
+	def getMonthDate(self,month): # We only took the first half of the new season
 		value=0
 		if month=="Aug":
 			value="08"
