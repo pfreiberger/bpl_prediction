@@ -1,32 +1,51 @@
 import pandas as pd
 import pymongo
+import nltk
+
+from joblib import Parallel, delayed
+import multiprocessing
+
+num_cores = multiprocessing.cpu_count()
 
 client = pymongo.MongoClient()
 db = client["n-grams"]
 
-max_elems = 1000
+max_list = [1500]
 
 team_names_14_15 = ['Man United', 'Man City','Arsenal','Chelsea','Liverpool','West Ham','Leicester','Everton','Swansea','Crystal Palace','Tottenham','West Brom','Southampton','Aston Villa','Stoke','Newcastle','Sunderland']
 team_names_14_15 = [team_name.lower().replace(" ", "_") for team_name in team_names_14_15]
 
-def get_data(file_name,n):
-    return clean_df(pd.read_csv(file_name, sep="\t", names=["word", "count"]), max_elems)
+def stem_words(words):
+    res = list()
+    for word in words:
+        stemmer = nltk.stem.porter.PorterStemmer()
+        stem = stemmer.stem(word)
+        res.append(stem)
+    return res
 
-def clean_df(df, n):
+def get_data(file_name, n, team_name=None):
+    return clean_df(pd.read_csv(file_name, sep="\t", names=["word", "count"]), n, team_name)
+
+def clean_df(df, n, team_name = None):
 	df = df[df["count"].map(type) != str]
 	df = df.sort("count", ascending=False)
+	df = df[df["count"] >10]
+	new_df = pd.DataFrame(columns = ["word", "count"])
 
-	return df.head(n)
+	for index, row in df.iterrows():
+		if check_word(row["word"], team_name):
+			new_df = new_df.append(row, ignore_index=True)
+	return new_df.head(n)
 
 
 #"".replac(" ", "_")
 
-def creat_files():
+def creat_files(max_elems):
 	for team_name in team_names_14_15:
 	    team_name = team_name.lower().replace(" ", "_")
-	    df_win = get_data("./result_word_count_14_15/"+  team_name + "_win_wc.csv", max_elems)
-	    df_lose = get_data("./result_word_count_14_15/"+  team_name + "_lose_wc.csv", max_elems)
-	    df_draw = get_data("./result_word_count_14_15/"+  team_name + "_draw_wc.csv", max_elems)
+	    df_win = get_data("./result_word_count_14_15/"+  team_name + "_win_wc.csv", max_elems, team_name)
+	    df_lose = get_data("./result_word_count_14_15/"+  team_name + "_lose_wc.csv", max_elems, team_name)
+	    df_draw = get_data("./result_word_count_14_15/"+  team_name + "_draw_wc.csv", max_elems, team_name)
 
 	    df_win.to_csv("./result_word_count_14_15_proc/"+  team_name + "_win_wc_" + str(max_elems) +".csv", index=False, encoding="utf-8")
 	    df_lose.to_csv("./result_word_count_14_15_proc/"+  team_name + "_lose_wc_" + str(max_elems) +".csv", index=False, encoding="utf-8")
@@ -34,16 +53,18 @@ def creat_files():
 
 def add_to_set(word_set, word_list):
 	for word in word_list:
-		word_set.add(word)
+		if word not in word_set:
+			word_set.append(word)
 	return word_set
 
 def get_single_words(file_name):
 	df = pd.read_csv(file_name, sep=",", names=["word", "count"], encoding="utf-8")
-	return list(df["word"])
+	words = list(df["word"])
+	return words
 
 
 def get_total_words(team_name, max_elems):
-	words = set()
+	words = list()
 	file_win = "./result_word_count_14_15_proc/"+  team_name + "_win_wc_" + str(max_elems) +".csv"
 	file_lose = "./result_word_count_14_15_proc/"+  team_name + "_lose_wc_" + str(max_elems) +".csv"
 	file_draw = "./result_word_count_14_15_proc/"+  team_name + "_draw_wc_" + str(max_elems) +".csv"
@@ -54,12 +75,19 @@ def get_total_words(team_name, max_elems):
 
 	return words
 
+def read_from_file(file_name):
+	f = open(file_name, "r")
+	words = f.readlines()
+	f.close()
+	return words 
+
 def write_to_file(words, file_name):
 	words = list(words)
 	f = open(file_name, "w+")
 	for word in words:
+
 		try:
-			f.write(word)
+			f.write(str(word))
 			f.write("\n") 
 		except UnicodeEncodeError:
 			print("couldn't write word, ecoding error")
@@ -68,7 +96,7 @@ def write_to_file(words, file_name):
 def save_words_for_teams(max_elems):
 	for team_name in team_names_14_15:
 		words = get_total_words(team_name, max_elems)
-		write_to_file(words, "./popular/" + team_name + "_popular.txt")
+		write_to_file(words, "./popular/" + team_name + "_popular_" +str(max_elems)+".txt")
 
 
 def get_popular_bigrams(collection):
@@ -96,16 +124,50 @@ def distinct_list(list1, list2):
 			list1.append(elem)
 	return list1
 
+def check_chars(word):
+	for letter in word:
+		if ord(letter) not in range(65,90) and ord(letter) not in range(97,123):
+			return False
+	return True
+
+def check_word(word, team_name):
+	stemmed = stem_words(team_names_14_15)
+	word = word.strip()
+	if word is not "http":
+		if len(word) > 1:
+			if word not in stemmed or word==team_name:
+				if check_chars(word):
+					return True
+	return False	
+
+def clean_words(team_name, words):
+	words_new = list()	
+	for word in words:
+		if check_word(word, team_name):
+			words_new.append(word)
+	return words_new
+
+def master_clean(max_elems):
+	for team_name in team_names_14_15:
+		words = read_from_file("./popular/" + team_name + "_popular_" +str(max_elems)+".txt")
+		words = clean_words(team_name, words)
+		write_to_file(words, "./popular_clean/" +team_name+"_clean_" +str(max_elems)+".txt")
+
+
+
 def bigram_master():
 	for team_name in team_names_14_15:
 		print(team_name)
 		words = combine_bigrams(team_name)
-		write_to_file(words, "./popular/" +team_name+"_bigrams.txt")
+		write_to_file(words, "./popular_bigram/" +team_name+"_bigrams.txt")
 
 
+
+	#print("step one")
+	#bigram_master()
 if __name__ == "__main__":
-	#creat_files()
-	#save_words_for_teams(max_elems)
-	print("step one")
-	bigram_master()
-
+	print("create sorted files")
+	Parallel(n_jobs=num_cores)(delayed(creat_files)(max_elem) for max_elem in max_list) 
+	print("create popular word files")
+	Parallel(n_jobs=num_cores)(delayed(save_words_for_teams)(max_elem) for max_elem in max_list)
+	Parallel(n_jobs=num_cores)(delayed(master_clean)(max_elem) for max_elem in max_list)  

@@ -150,9 +150,9 @@ def get_train_set_bigram(team_name):
 
     #df_test_bi.to_csv(path_test + team_name + "_test_bigram.csv", index=False)
     
-    df_main = df_main.append(df_win_bi, ignore_index=True)
-    df_main = df_main.append(df_lose_bi, ignore_index=True)
-    df_main = df_main.append(df_draw_bi, ignore_index=True)
+    df_main = df_main.append(df_win, ignore_index=True)
+    df_main = df_main.append(df_lose, ignore_index=True)
+    df_main = df_main.append(df_draw, ignore_index=True)
     df_main.to_csv(path_train + team_name + "_train_bigram.csv", index=False)
 
 
@@ -224,8 +224,8 @@ def combined(team_name):
     df_test.to_csv(path_test + team_name + "_test_comb.csv", index=False)
 
 
-if __name__ == "__main__":
-    Parallel(n_jobs=num_cores)(delayed(get_train_set)(team_name) for team_name in team_names) 
+if __name__ == "__main__"
+:    Parallel(n_jobs=num_cores)(delayed(get_train_set)(team_name) for team_name in team_names) 
     Parallel(n_jobs=num_cores)(delayed(get_train_set_bigram)(team_name) for team_name in team_names)
     Parallel(n_jobs=num_cores)(delayed(combined)(team_name) for team_name in team_names)  
     
