@@ -59,7 +59,7 @@ def create_match_line(collection, home_team, away_team, matchday):
     word_dict = OrderedDict((word, 0) for word in words)
     for tweet in collection.find({"team": home_team.replace("_", " "), "matchday": i}):
         word_dict = inc(word_dict, tweet['words'])
-     for tweet in collection.find({"team": away_team.replace("_", " "), "matchday": i}):
+    for tweet in collection.find({"team": away_team.replace("_", " "), "matchday": i}):
         word_dict = inc(word_dict, tweet['words'])
 
     return word_dict
@@ -85,13 +85,46 @@ def create_match_matrix(filename, collection, words):
         if index%100 ==0:
             print(index)
 
+
+def bigram_to_key(bigram):
+    return "".join(bigram).replace(" ", "").strip()
+
+def get_df_bigram(collection, team_name, words): 
+    df = pd.DataFrame(columns=words)   
+    
+    i=1
+    while(i<=14):
+        word_dict = OrderedDict((word, 0) for word in words)
+        if collection.find_one({"team": team_name.replace("_", " "), "matchday": i}):
+            for tweet in collection.find({"team": team_name.replace("_", " "), "matchday": i}):
+                bigram_keys =[bigram_to_key(word) for word in get_bigrams(tweet['words'], 2)]
+                word_dict = inc(word_dict, bigram_keys)          
+            df = df.append(word_dict, ignore_index=True)
             
+        i+=1
+    return df
+  
+        
+def get_test_set_bigram(team_name):
+    words = [bigram_to_key(word) for word in read_popular_bigrams(team_name)]
+    col = db['season15_16']
+    df_main = get_df(col, team_name, words)
+    df_main.to_csv(path + team_name + "_test_bigram.csv", index=False)
+    
+
+#returns list of list of bigrams
+def read_popular_bigrams(team_name):
+    with open("./popular/" +team_name+"_bigrams.txt", 'r') as f:
+        words = f.readlines() 
+    words = [word.replace("'","").split(",") for word in words]
+    return words 
       
 
 if __name__ == "__main__":
     #Parallel(n_jobs=num_cores)(delayed(get_test_set)(team_name) for team_name in team_names) 
-    create_match_matrix("./championship1516.csv")
+    #create_match_matrix("./championship1516.csv")
+    #Parallel(n_jobs=num_cores)(delayed(get_test_set_bigram)(team_name) for team_name in team_names)
        
 
-#get_train_set("arsenal")
+    get_train_set_bigram("arsenal")
     
