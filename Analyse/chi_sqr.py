@@ -6,14 +6,17 @@ import pymongo
 client = pymongo.MongoClient()
 db = client["team_results"]
  
-
+team_names = ['Man United', 'Man City','Arsenal','Chelsea','Liverpool','West Ham','Leicester','Everton','Swansea','Crystal Palace','Tottenham','West Brom','Southampton','Aston Villa','Stoke','Newcastle','Sunderland']
+team_names = [team_name.lower().replace(" ", "_") for team_name in team_names]
 #pos_score = BigramAssocMeasures.chi_sq(n_ii, (n_ix, n_xi), n_xx)
 # n_ii counts (w1, w2)
 # n_ix counts (w1, *)
 # n_xi counts (*, w2)
 # n_xx counts (*, *)
-def get_ss(word, clas, n_xx, col_win, col_lose, col_draw):
-	n_ii = collection.findOne({"words": word})["count"]
+def get_ss(word, clas, n_xx, collection, col_win, col_lose, col_draw):
+	n_ii = collection.find_one({"words": word})
+	print(n_ii)
+	input()
 	(n_ix, n_xi) = get_ns(word, clas, col_win, col_lose, col_draw)
 	return BigramAssocMeasures.chi_sq(n_ii, (n_ix, n_xi), n_xx)
 
@@ -78,11 +81,11 @@ def get_chi_sqr_values(words, col_win, col_lose, col_draw):
 		lose_score = 0
 		draw_score = 0
 		if col_win.find_one({"words": word}):
-			win_score = get_ss(word, 1, n_xx, col_win, col_lose, col_draw)
+			win_score = get_ss(word, 1, n_xx, col_win, col_win, col_lose, col_draw)
 		if col_lose.find_one({"words": word}):
-			lose_score = get_ss(word, -1, n_xx, col_win, col_lose, col_draw)
+			lose_score = get_ss(word, -1, n_xx, col_lose, col_win, col_lose, col_draw)
 		if col_draw.find_one({"words": word}):
-			draw_score = get_ss(word, 0, n_xx, col_win, col_lose, col_draw)
+			draw_score = get_ss(word, 0, n_xx, col_draw, col_win, col_lose, col_draw)
 		word_scores[word] = win_score + lose_score + draw_score
 	return word_scores
 
@@ -117,8 +120,8 @@ def main(team_name):
 	col_lose = db[team_name+"_lose"]
 	col_draw = db[team_name+"_draw"]
 
-	words = read_from_file("./popular_clean/" +team_name+"_clean_" +str(max_elems)+".txt")
-	bestwords = get_best_words(words)
+	words = read_from_file("./popular_clean/" +team_name+"_clean_1500.txt")
+	bestwords = get_best_words(words, 300, col_win, col_lose, col_draw)
 
 	write_to_file(words, "./best/" + team_name + "_best_" + str(n) + ".txt")
 
