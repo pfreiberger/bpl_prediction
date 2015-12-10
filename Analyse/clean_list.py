@@ -98,9 +98,18 @@ def save_words_for_teams(max_elems):
 		words = get_total_words(team_name, max_elems)
 		write_to_file(words, "./popular/" + team_name + "_popular_" +str(max_elems)+".txt")
 
+def clean_bigrams(ngrams):
+	new_ngrams = list()
+	for ngram in ngrams:
+		if check_words(ngram):
+			new_ngrams.append(ngram)
+
+	return new_ngrams
+
 
 def get_popular_bigrams(collection):
 	ngrams = [str(tweet["words"]).strip('[]') for tweet in collection.find({"count": {"$gte": 50}})]
+	ngrams = clean_bigrams(ngrams)
 	return ngrams
 
 
@@ -114,6 +123,7 @@ def combine_bigrams(team_name):
 	words = distinct_list(words, get_popular_bigrams(file_lose))
 	words = distinct_list(words, get_popular_bigrams(file_draw))
 
+
 	return words
 
 def distinct_list(list1, list2):
@@ -123,6 +133,13 @@ def distinct_list(list1, list2):
 		else:
 			list1.append(elem)
 	return list1
+
+def check_words(words):
+	for word in words:
+		if not check_words(word):
+			return False
+	return True
+
 
 def check_chars(word):
 	for letter in word:
