@@ -20,7 +20,7 @@ LAMBDAPATH="../TeamStrength/"
 GAMESTOADAPT=6 # After the 10-11 season, for every season we will take X Games to adapt our new lambda values 
 XMIN=1
 XMAX=GAMESTOADAPT
-CURRENTMATCHDAY=13 # To change every week , represent the match day in the new current season
+CURRENTMATCHDAY=12 # To change every week , represent the match day in the new current season
 
 
 if __name__ == '__main__':	
@@ -32,6 +32,7 @@ if __name__ == '__main__':
 		#myDB.create() 
 		season=["1011","1112","1213","1314","1415","1516"]
 		count=0
+		gamePercentage=[]
 		while (count != len(season)-1):
 			currentSeason=str(season[count])
 			nextSeason=str(season[count+1])
@@ -70,10 +71,16 @@ if __name__ == '__main__':
 					result=myLambda.calculateLambda()
 					scorePercentage+=result[0]
 					successPercentage+=result[1]
+					#gamePercentage.append(result[3]) # Win Draw Lose
 					XMIN+=1
 					XMAX+=1 
+					print("Final Correctness Prediction for season : "+str(nextSeason))
+					print("Score Success : "    +str((scorePercentage*1.0) /(7.0))+"%")
+					print("Prediction Result : "+str((successPercentage*1.0) /(7.0))+"%")
+				
 			else:
 				kappaMatrix=[[0 for x in range(3)] for x in range (3)]
+				"""
 				while (XMAX != 38): # 37 MatchDay so we can predict the last one of the season
 					myLambda=Lambda(nextSeason,database,XMIN,XMAX,0) # Predict Game XMAX+1 -> Next Game
 					result=myLambda.calculateLambda() # 0 = we dont want a print
@@ -85,10 +92,11 @@ if __name__ == '__main__':
 					for i in range(3):
 						for j in range(3):
 							kappaMatrix[i][j]=kappaMatrix[i][j]+tmpKappaMatrix[i][j]
-				print("Final Correctness Prediction for season : "+str(nextSeason))
+				"""
+				#print("Final Correctness Prediction for season : "+str(nextSeason))
 				#print("Score Success : "    +str((scorePercentage*1.0) /(38-GAMESTOADAPT))+"%")
 				#print("Prediction Result : "+str((successPercentage*1.0) /(38-GAMESTOADAPT))+"%")
-				
+				"""
 				print("	Predicted result  ")
 				vector=["W","L","D"]
 				print(" 	W 	L 	D")
@@ -102,7 +110,7 @@ if __name__ == '__main__':
 				cohenKappa=Kappa(kappaMatrix)
 				kappaScore=cohenKappa.giveKappa()
 				print("Cohen's Kappa score : " +str(kappaScore))
-				
+				"""
 			count+=1
 		
 		database.close();
