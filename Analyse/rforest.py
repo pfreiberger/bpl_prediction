@@ -1,8 +1,4 @@
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.linear_model import SGDClassifier
-from sklearn.neighbors import NearestNeighbors
-
 
 from numpy import genfromtxt, savetxt
 from joblib import Parallel, delayed
@@ -20,99 +16,21 @@ team_names = [team_name.lower().replace(" ", "_") for team_name in team_names]
 
 max_elems = [50, 100, 250]
 
-def get_probabilities_comb(team_name):
-    #create the training & test sets, skipping the header row with [1:]
-    #dataset = genfromtxt(open('trainsets/arsenal_train.csv','r'), dtype='int', delimiter=',', skip_header=1)[1:]
-    try:
-        dataset = genfromtxt('trainsets/'+team_name+'_train_comb.csv', dtype='float', delimiter=',', skip_header=1)[1:]    
-        target = [x[-1] for x in dataset]
-        train = [x[0:-1] for x in dataset]
-        test = genfromtxt('testsets/'+team_name+'_test_comb.csv', dtype='float', delimiter=',', skip_header=1)[1:]
-
-        rf_result = np.zeros((test.shape[0], 3))
-        for i in range(iterations):
-            
-            #create and train the random forest
-            #multi-core CPUs can use:
-            rf = RandomForestClassifier(n_estimators=100, n_jobs=4)
-            #single cpu usage, rf = RandomForestClassifier(n_estimators=100)
-            rf.fit(train, target)
-            rf_result = rf_result + rf.predict_proba(test)
-
-        rf_result = rf_result/iterations
-
-        savetxt('results/'+team_name+'_rf_proba_comb.csv', rf_result, delimiter=',', fmt='%f')
-    except:
-        print("error: {}, {}".format(team_name, n))
-
 def get_probabilities_bigram(team_name, n):
-    #create the training & test sets, skipping the header row with [1:]
-    #dataset = genfromtxt(open('trainsets/arsenal_train.csv','r'), dtype='int', delimiter=',', skip_header=1)[1:]
     try:
-        dataset = genfromtxt('trainsets_last/'+team_name+'_train_bigram_last_'+ str(n)+'.csv', dtype='float', delimiter=',', skip_header=1)[1:]    
-        target = [x[-1] for x in dataset]
-        train = [x[0:-1] for x in dataset]
-        test = genfromtxt('testsets_last/'+team_name+'_test_bigram_last_'+ str(n)+'.csv', dtype='float', delimiter=',', skip_header=1)[1:]
+        training_set = genfromtxt('trainsets_last/'+team_name+'_train_bigram_last_'+ str(n)+'.csv', dtype='float', delimiter=',', skip_header=1)[1:]    
+        class_labels = [x[-1] for x in training_set]
+        features = [x[0:-1] for x in training_set]
+        test_set = genfromtxt('testsets_last/'+team_name+'_test_bigram_last_'+ str(n)+'.csv', dtype='float', delimiter=',', skip_header=1)[1:]
 
         rf_result = np.zeros((test.shape[0], 3))
-        for i in range(iterations):
-            
-            #create and train the random forest
-            #multi-core CPUs can use:
-            rf = RandomForestClassifier(n_estimators=100, n_jobs=4)
-            #single cpu usage, rf = RandomForestClassifier(n_estimators=100)
-            rf.fit(train, target)
-            rf_result = rf_result + rf.predict_proba(test)
+        for i in range(iterations):            
+            rfc = RandomForestClassifier(n_estimators=100, n_jobs=4)
+            rfc.fit(features, class_labels)
+            rf_result = rf_result + rfc.predict_proba(test_set)
 
         rf_result = rf_result/iterations
         savetxt('results/'+team_name+'_rf_proba_bigram_last_'+ str(n)+'.csv', rf_result, delimiter=',', fmt='%f')
-    except:
-        print("error: {}, {}".format(team_name, n))
-
-    #create and train the random forest
-    #multi-core CPUs can use:
-    #sgd = SGDClassifier(loss='log', n_jobs=4)
-    #single cpu usage, rf = RandomForestClassifier(n_estimators=100)
-    #sgd.fit(train, target)
-
-    #gbc = GradientBoostingClassifier(n_estimators=100)
-    #single cpu usage, rf = RandomForestClassifier(n_estimators=100)
-    #gbc.fit(train, target)
-
-
-
-
-    #savetxt('results/'+team_name+'_rf_bigram.csv', rf.predict(test), delimiter=',', fmt='%f')
-    
-
-    #savetxt('results/'+team_name+'_sgd_bigram.csv', sgd.predict(test), delimiter=',', fmt='%f')
-    #savetxt('results/'+team_name+'_sgd_proba.csv', sgd.predict_proba(test), delimiter=',', fmt='%f')
-
-    #savetxt('results/'+team_name+'_gbc_bigram.csv', gbc.predict(test), delimiter=',', fmt='%f')
-    #savetxt('results/'+team_name+'_gbc_proba_bigram.csv', gbc.predict_proba(test), delimiter=',', fmt='%f')
-
-def get_probabilities_unigram(team_name, n):
-    try:
-        #create the training & test sets, skipping the header row with [1:]
-        #dataset = genfromtxt(open('trainsets/arsenal_train.csv','r'), dtype='int', delimiter=',', skip_header=1)[1:]
-        dataset = genfromtxt('trainsets/'+team_name+'_train_unigram_'+ str(n)+'.csv', dtype='float', delimiter=',', skip_header=1)[1:]    
-        target = [x[-1] for x in dataset]
-        train = [x[0:-1] for x in dataset]
-        test = genfromtxt('testsets/'+team_name+'_test_unigram_'+ str(n)+'.csv', dtype='float', delimiter=',', skip_header=1)[1:]
-        
-        rf_result = np.zeros((test.shape[0], 3))
-        for i in range(iterations):
-            
-            #create and train the random forest
-            #multi-core CPUs can use:
-            rf = RandomForestClassifier(n_estimators=100, n_jobs=4)
-            #single cpu usage, rf = RandomForestClassifier(n_estimators=100)
-            rf.fit(train, target)
-            rf_result = rf_result + rf.predict_proba(test)
-
-        rf_result = rf_result/iterations
-
-        savetxt('results/'+team_name+'_rf_proba_unigram_'+ str(n)+'.csv', rf_result, delimiter=',', fmt='%f')
     except:
         print("error: {}, {}".format(team_name, n))
 
@@ -178,33 +96,6 @@ def get_joint_probabilities(filename, n):
             joint_df.to_csv("joint/joint_probabilities_{}_{}_last.csv".format(alpha, n), index=False)
         except UnicodeEncodeError:
             print("couldn't write word, ecoding error")
-
-
-def get_mean_prob(team, matchday):
-    alpha = 0.5
-    home_lose = -1
-    draw = -1
-    home_win = -1
-    try:
-        with open('results/'+team+'_rf_proba_bigram.csv') as f:
-            home_probs = [[float(elem.strip()) for elem in line.split(",")] for line in f.readlines()]
-
-
-        with open('results/'+team+'_rf_proba.csv') as f:
-            away_probs = [[float(elem.strip()) for elem in line.split(",")] for line in f.readlines()]
-
-            home_prob = home_probs[matchday-1]
-            away_prob = away_probs[matchday-1]
-
-            home_win = (alpha * home_prob[2]) + ((1 - alpha) * away_prob[2])
-            home_lose = (alpha * home_prob[0]) + ((1 - alpha) * away_prob[0])
-            draw = (alpha * home_prob[1]) + ((1 - alpha) * away_prob[1])
-
-    except FileNotFoundError:
-        print('file does not exist')
-
-
-    return [home_lose, draw, home_win] 
     
 
 

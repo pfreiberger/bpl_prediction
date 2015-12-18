@@ -38,8 +38,6 @@ def clean_df(df, n, team_name = None):
 	return new_df.head(n)
 
 
-#"".replac(" ", "_")
-
 def creat_files(max_elems):
 	for team_name in team_names_14_15:
 	    team_name = team_name.lower().replace(" ", "_")

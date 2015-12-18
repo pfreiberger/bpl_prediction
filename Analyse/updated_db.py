@@ -59,12 +59,12 @@ def update(team_name):
 	col_lose_new = db_new[team_name+"_lose"]
 	col_draw_new = db_new[team_name+"_draw"]
 
-	do_stuff(words, team_name, col_win_old, col_win_new)
-	do_stuff(words, team_name, col_lose_old, col_lose_new)
-	do_stuff(words, team_name, col_draw_old, col_draw_new)
+	clean(words, team_name, col_win_old, col_win_new)
+	clean(words, team_name, col_lose_old, col_lose_new)
+	clean(words, team_name, col_draw_old, col_draw_new)
 
 
-def do_stuff(words, team_name, col1, col2):
+def clean(words, team_name, col1, col2):
 	for tweet in col1.find():
 		new_words = list()
 		rest = clean_words(team_name, tweet["words"])

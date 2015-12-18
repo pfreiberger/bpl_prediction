@@ -47,7 +47,7 @@ while True:
                 print("Error")
                 time.sleep(900)
 
-            print('change key and instert')
+            print('change key and insert')
             i = 0
             for item in r:
                 try:

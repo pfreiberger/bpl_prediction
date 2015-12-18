@@ -26,17 +26,17 @@ api = tweepy.API(auth)
 
 users = col.distinct('user.screen_name')
 server2.close()
-d = usertweets.distinct('user.screen_name')
+distinct_list = usertweets.distinct('user.screen_name')
 
 print('start')
 
-for u in users:
+for user in users:
     try:
-        if u in d:
+        if user in distinct_list:
             continue
         # define user to get tweets for. accepts input from user
-        print(u)
-        user = api.get_user(u)
+        print(user)
+        user = api.get_user(user)
 
         timeline = user.timeline(count=200)
         #timeline = api.user_timeline(screen_name=user, count=10)

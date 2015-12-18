@@ -13,7 +13,7 @@ num_cores = multiprocessing.cpu_count()
 
 db2.connection.drop_database
 
-def find_n_grams(input_lst, n):
+def find_n_grams(input_lst, n=2):
     return list(zip(*[input_lst[i:] for i in range(n)]))
 
 def get_n_grams(input_col):
