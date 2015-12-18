@@ -62,7 +62,6 @@ def get_single_words(file_name):
 	words = list(df["word"])
 	return words
 
-
 def get_total_words(team_name, max_elems):
 	words = list()
 	file_win = "./result_word_count_14_15_proc/"+  team_name + "_win_wc_" + str(max_elems) +".csv"
@@ -78,6 +77,8 @@ def get_total_words(team_name, max_elems):
 def read_from_file(file_name):
 	f = open(file_name, "r")
 	words = f.readlines()
+	words = [word.strip() for word in words] 
+	words = [word for word in words if not word==""]
 	f.close()
 	return words 
 
@@ -98,20 +99,20 @@ def save_words_for_teams(max_elems):
 		words = get_total_words(team_name, max_elems)
 		write_to_file(words, "./popular/" + team_name + "_popular_" +str(max_elems)+".txt")
 
-def clean_bigrams(ngrams):
+def clean_bigrams(collection, ngrams, team_name):
 	new_ngrams = list()
 	for ngram in ngrams:
-		if check_words(ngram):
+		if check_words(ngram, team_name):
 			new_ngrams.append(ngram)
+		else:
+			collection.remove({"words": ngram})
 
 	return new_ngrams
 
-
-def get_popular_bigrams(collection):
-	ngrams = [str(tweet["words"]).strip('[]') for tweet in collection.find({"count": {"$gte": 50}})]
-	ngrams = clean_bigrams(ngrams)
+def get_popular_bigrams(collection, team_name):
+	ngrams = [tweet["words"] for tweet in collection.find({"count": {"$gte": 50}})]
+	ngrams = clean_bigrams(collection, ngrams, team_name)
 	return ngrams
-
 
 def combine_bigrams(team_name):
 	words = list()
@@ -119,10 +120,9 @@ def combine_bigrams(team_name):
 	file_lose = db[team_name+"_draw"]
 	file_draw = db[team_name+"_lose"]
 
-	words = distinct_list(words, get_popular_bigrams(file_win))
-	words = distinct_list(words, get_popular_bigrams(file_lose))
-	words = distinct_list(words, get_popular_bigrams(file_draw))
-
+	words = distinct_list(words, get_popular_bigrams(file_win, team_name))
+	words = distinct_list(words, get_popular_bigrams(file_lose, team_name))
+	words = distinct_list(words, get_popular_bigrams(file_draw, team_name))
 
 	return words
 
@@ -134,12 +134,11 @@ def distinct_list(list1, list2):
 			list1.append(elem)
 	return list1
 
-def check_words(words):
+def check_words(words, team_name):
 	for word in words:
-		if not check_words(word):
+		if not check_word(word, team_name):
 			return False
 	return True
-
 
 def check_chars(word):
 	for letter in word:
@@ -170,21 +169,18 @@ def master_clean(max_elems):
 		words = clean_words(team_name, words)
 		write_to_file(words, "./popular_clean/" +team_name+"_clean_" +str(max_elems)+".txt")
 
-
-
-def bigram_master():
-	for team_name in team_names_14_15:
-		print(team_name)
-		words = combine_bigrams(team_name)
-		write_to_file(words, "./popular_bigram/" +team_name+"_bigrams.txt")
-
-
+def bigram_master(team_name):	
+	print(team_name)
+	words = combine_bigrams(team_name)
+	write_to_file(words, "./popular_bigram/" +team_name+"_bigrams.txt")
 
 	#print("step one")
 	#bigram_master()
+
 if __name__ == "__main__":
-	print("create sorted files")
-	Parallel(n_jobs=num_cores)(delayed(creat_files)(max_elem) for max_elem in max_list) 
-	print("create popular word files")
-	Parallel(n_jobs=num_cores)(delayed(save_words_for_teams)(max_elem) for max_elem in max_list)
-	Parallel(n_jobs=num_cores)(delayed(master_clean)(max_elem) for max_elem in max_list)  
+	#print("create sorted files")
+	#Parallel(n_jobs=num_cores)(delayed(creat_files)(max_elem) for max_elem in max_list) 
+	#print("create popular word files")
+	#Parallel(n_jobs=num_cores)(delayed(save_words_for_teams)(max_elem) for max_elem in max_list)
+	#Parallel(n_jobs=num_cores)(delayed(master_clean)(max_elem) for max_elem in max_list) 
+	Parallel(n_jobs=num_cores)(delayed(bigram_master)(team_name) for team_name in team_names_14_15) 
