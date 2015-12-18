@@ -29,6 +29,7 @@ class Lambda(object):
 		self.xmax=xmax
 		self.printOrNot=printOrNot
 		self.kappaMatrix=[[0 for x in range(3)] for x in range(3)] # W L D
+		self.gamePercentage=[]
 
 	def getGames(self):
 		self.cursor.execute( 
@@ -123,7 +124,7 @@ class Lambda(object):
 
 		return((self.successScore*100.0)/(len(self.seasonGame)*1.0), \
 			   (self.successOutCome*100.0)/(len(self.seasonGame)*1.0),
-			   self.kappaMatrix)
+			   self.kappaMatrix, self.gamePercentage)
 
 	def kappaAccuracy(self,game,proba):
 		"""
@@ -163,29 +164,38 @@ class Lambda(object):
 		print("Prediction Result : "+str(round((self.successOutCome*100.0)/(len(self.seasonGame)*1.0)))+"%")
 
 	def compareProb(self,game,proba):
-		if (game[3]>game[4]) : #If the Home Team Win
-			if (proba[0] > proba[1] and proba[0]> proba[2]): #If we Predicted a Win
-				self.successOutCome+=1
-		elif (game[3]==game[4]) : #If there is a draw
-			self.realDraw+=1
-			if (proba[2] > proba[1] and proba[2]> proba[0]): #If we Predicted a draw
-				self.successOutCome+=1
-		else : #If the away team won
-			if (proba[1] > proba[0] and proba[1]> proba[2]): #If we Predicted a win for the home team
-				self.successOutCome+=1
-		if (int(proba[3])==int(game[3]) and int(proba[4])==int(game[4])): # If the predicted score is the same than the game score
-				self.successScore+=1
-
+		notToTake=["Norwich","Watford","Bournemouth"]
+		if (not (game[1] in notToTake or game[2] in notToTake)):
+			if (game[3]>game[4]) : #If the Home Team Win
+				if (proba[0] > proba[1] and proba[0]> proba[2]): #If we Predicted a Win
+					self.successOutCome+=1
+			elif (game[3]==game[4]) : #If there is a draw
+				self.realDraw+=1
+				if (proba[2] > proba[1] and proba[2]> proba[0]): #If we Predicted a draw
+					self.successOutCome+=1
+			else : #If the away team won
+				if (proba[1] > proba[0] and proba[1]> proba[2]): #If we Predicted a win for the home team
+					self.successOutCome+=1
+			if (int(proba[3])==int(game[3]) and int(proba[4])==int(game[4])): # If the predicted score is the same than the game score
+					self.successScore+=1
+		if (not (game[1] in notToTake or game[2] in notToTake)):
+			tmp=[]
+			tmp.append(game[1])
+			tmp.append(game[2])
+			tmp.append((float("{0:.3}".format(float(proba[0])))))
+			tmp.append((float("{0:.3}".format(float(proba[2])))))
+			tmp.append((float("{0:.3}".format(float(proba[1])))))
+			self.gamePercentage.append(tmp)
 
 	def printStat(self,game,proba):
-		if ("-1" in str(game[3])): # It means its a game from the current seaon that has not been played yet
-			print("MATCH : "+game[1]+" ---- "+game[2])
-			print("Home Win : "+str(round(proba[0]))+"%")
-			print("Away Win : "+str(round(proba[1]))+"%")
-			print("Draw : "	   +str(round(proba[2]))+"%")
-			print("Expected score is : "+str(proba[3])+"-"+str(proba[4]))
-			print("Real Score is still unknown")
-			print("-----------------------------------------")
+		#if ("-1" in str(game[3])): # It means its a game from the current seaon that has not been played yet
+		print("MATCH : "+game[1]+" ---- "+game[2])
+		print("Home Win : "+str(round(proba[0]))+"%")
+		print("Away Win : "+str(round(proba[1]))+"%")
+		print("Draw : "	   +str(round(proba[2]))+"%")
+		print("Expected score is : "+str(proba[3])+"-"+str(proba[4]))
+		print("Real Score is still unknown")
+		print("-----------------------------------------")
 
 	def probabilities(self):
 		homeWin=0
